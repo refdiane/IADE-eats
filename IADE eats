@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire de Saisie Quotidienne</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Header & Navigation -->
+    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-indigo-500 rounded-lg">
+                        <i class="fa-solid fa-clipboard-list text-xl text-white"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight">Journal du Jour</span>
+                </div>
+                <!-- Information de la date du jour -->
+                <div class="text-sm bg-indigo-700/60 px-3 py-1.5 rounded-full font-medium flex items-center gap-2">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span id="current-date-display">Aujourd'hui</span>
+                </div>
+            </div>
+
+            <!-- Onglets (Tabs) Navigation -->
+            <div class="flex space-x-2 border-b border-indigo-500/40 mt-2">
+                <button id="tab-btn-saisie" onclick="switchTab('saisie')" 
+                    class="py-3 px-6 font-semibold text-sm transition-all border-b-2 border-white text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Saisie du jour</span>
+                </button>
+                <button id="tab-btn-recap" onclick="switchTab('recap')" 
+                    class="py-3 px-6 font-semibold text-sm transition-all border-b-2 border-transparent text-indigo-200 hover:text-white hover:border-indigo-300 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Informations saisies</span>
+                    <span id="badge-count" class="ml-1 bg-white text-indigo-600 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Area -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ONGLET 1: Saisie de la journée -->
+        <section id="content-saisie" class="block space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8">
+                <div class="mb-6 border-b border-slate-100 pb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-plus text-indigo-600"></i>
+                        Nouvelle entrée
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1">Renseignez les détails des activités, notes ou évènements de votre journée.</p>
+                </div>
+
+                <form id="entry-form" onsubmit="handleFormSubmit(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Heure / Moment -->
+                        <div>
+                            <label for="entry-time" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                                Heure / Horodatage
+                            </label>
+                            <input type="time" id="entry-time" required 
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700">
+                        </div>
+
+                        <!-- Catégorie -->
+                        <div>
+                            <label for="entry-category" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                                Catégorie
+                            </label>
+                            <select id="entry-category" required 
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700 bg-white">
+                                <option value="Tâche">Tâche / Travail</option>
+                                <option value="Réunion">Réunion / Échange</option>
+                                <option value="Note">Note / Remarque</option>
+                                <option value="Incidence">Incidence / Problème</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+
+                        <!-- Intervenant / Responsable -->
+                        <div>
+                            <label for="entry-author" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                                Auteur / Intervenant
+                            </label>
+                            <input type="text" id="entry-author" placeholder="ex: Marc D." required 
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700">
+                        </div>
+                    </div>
+
+                    <!-- Titre / Sujet principal -->
+                    <div>
+                        <label for="entry-title" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                            Objet / Titre résumé
+                        </label>
+                        <input type="text" id="entry-title" placeholder="Ex: Validation du rapport trimestriel" required 
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700">
+                    </div>
+
+                    <!-- Description détaillée -->
+                    <div>
+                        <label for="entry-details" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                            Détails & Informations saisies
+                        </label>
+                        <textarea id="entry-details" rows="4" placeholder="Saisissez ici toutes les informations, observations ou résultats importants..." required
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700"></textarea>
+                    </div>
+
+                    <!-- Priority & Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Niveau de Priorité</label>
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="priority" value="Normale" checked class="text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2 text-sm text-slate-700">Normale</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="priority" value="Importante" class="text-amber-600 focus:ring-amber-500">
+                                    <span class="ml-2 text-sm text-slate-700">Importante</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="priority" value="Urgente" class="text-rose-600 focus:ring-rose-500">
+                                    <span class="ml-2 text-sm text-slate-700">Urgente</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons de soumission -->
+                    <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+                        <button type="reset" class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 transition">
+                            Réinitialiser
+                        </button>
+                        <button type="submit" 
+                            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-md hover:shadow-indigo-200 transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Enregistrer l'information
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Toast de confirmation -->
+            <div id="toast-success" class="hidden fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 transition-all transform translate-y-0">
+                <i class="fa-solid fa-circle-check text-xl"></i>
+                <span class="font-medium">Information enregistrée avec succès !</span>
+            </div>
+        </section>
+
+        <!-- ONGLET 2: Récapitulatif des informations de la journée -->
+        <section id="content-recap" class="hidden space-y-6">
+
+            <!-- KPI Metrics / Résumé synthétique -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
+                        <i class="fa-solid fa-file-lines text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Entrées aujourd'hui</p>
+                        <p id="stat-total" class="text-2xl font-bold text-slate-800">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-amber-100 text-amber-600 rounded-xl">
+                        <i class="fa-solid fa-clock text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dernière Saisie</p>
+                        <p id="stat-last-time" class="text-2xl font-bold text-slate-800">--:--</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-rose-100 text-rose-600 rounded-xl">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Urgences / Prioritaires</p>
+                        <p id="stat-urgent" class="text-2xl font-bold text-slate-800">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtres et Actions de recherche -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                <!-- Recherche -->
+                <div class="relative w-full md:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                    <input type="text" id="search-input" oninput="filterEntries()" placeholder="Rechercher une saisie..." 
+                        class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Filtre Catégorie -->
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <select id="filter-category" onchange="filterEntries()" class="px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="ALL">Toutes les catégories</option>
+                        <option value="Tâche">Tâche / Travail</option>
+                        <option value="Réunion">Réunion / Échange</option>
+                        <option value="Note">Note / Remarque</option>
+                        <option value="Incidence">Incidence / Problème</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+
+                    <button onclick="exportCSV()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Exporter (CSV)</span>
+                    </button>
+
+                    <button onclick="clearTodayEntries()" class="px-3 py-2 text-rose-600 hover:bg-rose-50 text-sm font-semibold rounded-xl transition" title="Effacer tout">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tableau d'affichage des données de la journée -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list text-indigo-600"></i>
+                        Historique des saisies de la journée
+                    </h3>
+                    <span class="text-xs text-slate-400" id="date-subtitle"></span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <th class="py-3 px-6">Heure</th>
+                                <th class="py-3 px-6">Catégorie</th>
+                                <th class="py-3 px-6">Objet & Informations</th>
+                                <th class="py-3 px-6">Auteur</th>
+                                <th class="py-3 px-6 text-center">Priorité</th>
+                                <th class="py-3 px-6 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entries-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Injected by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Message si vide -->
+                <div id="empty-state" class="py-12 text-center hidden">
+                    <div class="p-4 bg-slate-100 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center text-slate-400">
+                        <i class="fa-regular fa-folder-open text-2xl"></i>
+                    </div>
+                    <p class="font-semibold text-slate-600">Aucune information saisie pour le moment</p>
+                    <p class="text-xs text-slate-400 mt-1">Utilisez le premier onglet pour ajouter de nouvelles données.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Initialisation de la date d'aujourd'hui (au format YYYY-MM-DD)
+        const todayKey = new Date().toISOString().split('T')[0];
+
+        // Charger les entrées depuis le LocalStorage
+        function getStorageData() {
+            const data = localStorage.getItem('daily_app_data');
+            return data ? JSON.parse(data) : {};
+        }
+
+        function saveStorageData(data) {
+            localStorage.setItem('daily_app_data', JSON.stringify(data));
+        }
+
+        function getTodayEntries() {
+            const allData = getStorageData();
+            return allData[todayKey] || [];
+        }
+
+        function saveTodayEntries(entries) {
+            const allData = getStorageData();
+            allData[todayKey] = entries;
+            saveStorageData(allData);
+            updateBadge();
+        }
+
+        // Gestion de l'affichage de l'heure courante
+        document.addEventListener('DOMContentLoaded', () => {
+            // Afficher la date actuelle en français
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateFormatted = new Date().toLocaleDateString('fr-FR', options);
+            document.getElementById('current-date-display').innerText = dateFormatted;
+            document.getElementById('date-subtitle').innerText = dateFormatted;
+
+            // Pré-remplir l'heure
+            const now = new Date();
+            const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            document.getElementById('entry-time').value = timeString;
+
+            updateBadge();
+            renderRecap();
+        });
+
+        // Navigation entre Onglets
+        function switchTab(tabName) {
+            const btnSaisie = document.getElementById('tab-btn-saisie');
+            const btnRecap = document.getElementById('tab-btn-recap');
+            const contentSaisie = document.getElementById('content-saisie');
+            const contentRecap = document.getElementById('content-recap');
+
+            if (tabName === 'saisie') {
+                contentSaisie.classList.remove('hidden');
+                contentRecap.classList.add('hidden');
+
+                btnSaisie.className = "py-3 px-6 font-semibold text-sm transition-all border-b-2 border-white text-white flex items-center gap-2";
+                btnRecap.className = "py-3 px-6 font-semibold text-sm transition-all border-b-2 border-transparent text-indigo-200 hover:text-white hover:border-indigo-300 flex items-center gap-2";
+            } else {
+                contentSaisie.classList.add('hidden');
+                contentRecap.classList.remove('hidden');
+
+                btnRecap.className = "py-3 px-6 font-semibold text-sm transition-all border-b-2 border-white text-white flex items-center gap-2";
+                btnSaisie.className = "py-3 px-6 font-semibold text-sm transition-all border-b-2 border-transparent text-indigo-200 hover:text-white hover:border-indigo-300 flex items-center gap-2";
+
+                renderRecap();
+            }
+        }
+
+        // Soumission du Formulaire
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const time = document.getElementById('entry-time').value;
+            const category = document.getElementById('entry-category').value;
+            const author = document.getElementById('entry-author').value;
+            const title = document.getElementById('entry-title').value;
+            const details = document.getElementById('entry-details').value;
+            const priority = document.querySelector('input[name="priority"]:checked').value;
+
+            const newEntry = {
+                id: Date.now(),
+                time,
+                category,
+                author,
+                title,
+                details,
+                priority
+            };
+
+            const entries = getTodayEntries();
+            entries.unshift(newEntry); // Ajouter au début
+            saveTodayEntries(entries);
+
+            // Reset partiel du formulaire
+            document.getElementById('entry-title').value = '';
+            document.getElementById('entry-details').value = '';
+
+            // Notification Toast
+            showToast();
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast-success');
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function updateBadge() {
+            const entries = getTodayEntries();
+            document.getElementById('badge-count').innerText = entries.length;
+        }
+
+        // Rendu du Récapitulatif (Onglet 2)
+        function renderRecap() {
+            const entries = getTodayEntries();
+            const tableBody = document.getElementById('entries-table-body');
+            const emptyState = document.getElementById('empty-state');
+
+            // Filtrage courant
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filterCat = document.getElementById('filter-category').value;
+
+            const filtered = entries.filter(item => {
+                const matchesSearch = item.title.toLowerCase().includes(searchTerm) || 
+                                      item.details.toLowerCase().includes(searchTerm) ||
+                                      item.author.toLowerCase().includes(searchTerm);
+                const matchesCategory = (filterCat === 'ALL') || (item.category === filterCat);
+                return matchesSearch && matchesCategory;
+            });
+
+            // Update KPIs
+            document.getElementById('stat-total').innerText = entries.length;
+            document.getElementById('stat-last-time').innerText = entries.length > 0 ? entries[0].time : '--:--';
+            document.getElementById('stat-urgent').innerText = entries.filter(i => i.priority === 'Urgente').length;
+
+            tableBody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+
+                filtered.forEach(entry => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50/80 transition";
+
+                    // Badge Priorité
+                    let priorityBadge = '';
+                    if (entry.priority === 'Urgente') {
+                        priorityBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-100 text-rose-700">Urgente</span>`;
+                    } else if (entry.priority === 'Importante') {
+                        priorityBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">Importante</span>`;
+                    } else {
+                        priorityBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">Normale</span>`;
+                    }
+
+                    // Badge Catégorie
+                    let catColor = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                    if (entry.category === 'Réunion') catColor = "bg-sky-50 text-sky-700 border-sky-200";
+                    if (entry.category === 'Incidence') catColor = "bg-rose-50 text-rose-700 border-rose-200";
+                    if (entry.category === 'Note') catColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+
+                    tr.innerHTML = `
+                        <td class="py-4 px-6 font-semibold text-slate-700 whitespace-nowrap">
+                            <i class="fa-regular fa-clock text-slate-400 mr-1.5"></i>${entry.time}
+                        </td>
+                        <td class="py-4 px-6 whitespace-nowrap">
+                            <span class="px-2.5 py-1 text-xs font-medium border rounded-lg ${catColor}">${entry.category}</span>
+                        </td>
+                        <td class="py-4 px-6 max-w-md">
+                            <p class="font-bold text-slate-800">${escapeHtml(entry.title)}</p>
+                            <p class="text-xs text-slate-500 mt-0.5 line-clamp-2">${escapeHtml(entry.details)}</p>
+                        </td>
+                        <td class="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
+                            ${escapeHtml(entry.author)}
+                        </td>
+                        <td class="py-4 px-6 text-center whitespace-nowrap">
+                            ${priorityBadge}
+                        </td>
+                        <td class="py-4 px-6 text-right whitespace-nowrap">
+                            <button onclick="deleteEntry(${entry.id})" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition" title="Supprimer">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+
+        function filterEntries() {
+            renderRecap();
+        }
+
+        function deleteEntry(id) {
+            if (confirm("Voulez-vous vraiment supprimer cette saisie ?")) {
+                let entries = getTodayEntries();
+                entries = entries.filter(e => e.id !== id);
+                saveTodayEntries(entries);
+                renderRecap();
+            }
+        }
+
+        function clearTodayEntries() {
+            if (confirm("Attention: toutes les données saisies aujourd'hui seront réinitialisées. Continuer ?")) {
+                saveTodayEntries([]);
+                renderRecap();
+            }
+        }
+
+        function exportCSV() {
+            const entries = getTodayEntries();
+            if (entries.length === 0) {
+                alert("Aucune donnée à exporter.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Heure;Categorie;Auteur;Titre;Details;Priorite\n";
+            entries.forEach(e => {
+                const row = `"${e.time}";"${e.category}";"${e.author}";"${e.title.replace(/"/g, '""')}";"${e.details.replace(/"/g, '""')}";"${e.priority}"`;
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Saisie_Journee_${todayKey}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
+```eof
+
+L'application a été structurée avec les deux onglets :
+1. **Saisie du jour** : Formulaire permettant de renseigner l'heure, la catégorie, l'auteur, l'objet, le détail et la priorité.
+2. **Informations saisies** : Tableau récapitulatif dynamique avec indicateurs clés (KPIs), recherche, filtres par catégorie, suppression et export CSV des données enregistrées dans la journée.
