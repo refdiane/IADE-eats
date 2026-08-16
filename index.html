@@ -64,33 +64,33 @@
 <body>
 
   <!-- Modal de connexion -->
-<div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999;">
-  <div style="background: white; padding: 30px; border-radius: 12px; max-width: 350px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-    <h2 style="margin-top: 0; color: #1e293b;">Connexion IADE Eats</h2>
-    <p style="color: #64748b; font-size: 0.9rem;">Veuillez saisir vos identifiants pour accéder à l'application.</p>
-    
-    <form id="login-form" onsubmit="handleLogin(event)">
-      <div style="margin-bottom: 15px; text-align: left;">
-        <label style="font-size: 0.85rem; font-weight: bold; color: #334155;">Identifiant</label>
-        <input type="text" id="auth-id" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
-      </div>
+  <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+    <div style="background: white; padding: 30px; border-radius: 12px; max-width: 350px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+      <h2 style="margin-top: 0; color: #1e293b;">Connexion IADE Eats</h2>
+      <p style="color: #64748b; font-size: 0.9rem;">Veuillez saisir vos identifiants pour accéder à l'application.</p>
       
-      <div style="margin-bottom: 15px; text-align: left;">
-        <label style="font-size: 0.85rem; font-weight: bold; color: #334155;">Mot de passe</label>
-        <input type="password" id="auth-pass" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
-      </div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div style="margin-bottom: 15px; text-align: left;">
+          <label style="font-size: 0.85rem; font-weight: bold; color: #334155;">Identifiant</label>
+          <input type="text" id="auth-id" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 15px; text-align: left;">
+          <label style="font-size: 0.85rem; font-weight: bold; color: #334155;">Mot de passe</label>
+          <input type="password" id="auth-pass" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+        </div>
 
-      <div style="margin-bottom: 20px; text-align: left; display: flex; align-items: center; gap: 8px;">
-        <input type="checkbox" id="remember-me" style="width: 16px; height: 16px;">
-        <label for="remember-me" style="font-size: 0.85rem; color: #475569; cursor: pointer;">Se souvenir de moi</label>
-      </div>
+        <div style="margin-bottom: 20px; text-align: left; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="remember-me" style="width: 16px; height: 16px;">
+          <label for="remember-me" style="font-size: 0.85rem; color: #475569; cursor: pointer;">Se souvenir de moi</label>
+        </div>
 
-      <p id="login-error" style="color: #dc2626; font-size: 0.85rem; display: none; margin-bottom: 15px;">Identifiant ou mot de passe incorrect.</p>
+        <p id="login-error" style="color: #dc2626; font-size: 0.85rem; display: none; margin-bottom: 15px;">Identifiant ou mot de passe incorrect.</p>
 
-      <button type="submit" style="width: 100%; background: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Se connecter</button>
-    </form>
+        <button type="submit" style="width: 100%; background: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Se connecter</button>
+      </form>
+    </div>
   </div>
-</div>
   
   <header style="display: flex; align-items: center; padding: 12px 20px; gap: 15px;">
     <img src="https://i.ibb.co/SX6jDtYm/logo.png" alt="Logo IADE Eats" style="height: 4cm; width: 4cm; border-radius: 8px; object-fit: cover;">
@@ -99,6 +99,11 @@
       <p style="font-size: 0.8rem; margin: 0; text-align: left;">Suivi des différents niveaux (stomacal, vésical, caféïnique, nicotinique...) IADEsque en temps réel. Anonymat voulu et assumé</p>
     </div>
   </header>
+
+  <!-- Bannière d'alerte Push -->
+  <div id="push-alert" style="display: none; background-color: #fee2e2; border-left: 5px solid #ef4444; color: #991b1b; padding: 15px; margin: 15px auto; max-width: 900px; border-radius: 8px; font-weight: normal; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+    <span id="push-alert-message"></span>
+  </div>
 
   <nav class="tabs">
     <button class="tab-btn active" id="btn-tab1" onclick="switchTab('tab1')">Au menu ce jour 🍽️</button>
@@ -188,33 +193,32 @@
   <div id="sync-status">🟢 Prêt</div>
 
   <script>
-    
-const VALID_ID = "CHUnice";
-const VALID_PASS = "2974";
+    const VALID_ID = "CHUnice";
+    const VALID_PASS = "2974";
 
-function checkAuthOnLoad() {
-  const savedAuth = localStorage.getItem("iade_eats_auth");
-  if (savedAuth === "true") {
-    document.getElementById("login-overlay").style.display = "none";
-  }
-}
-
-function handleLogin(event) {
-  event.preventDefault();
-  const inputId = document.getElementById("auth-id").value;
-  const inputPass = document.getElementById("auth-pass").value;
-  const remember = document.getElementById("remember-me").checked;
-  const errorMsg = document.getElementById("login-error");
-
-  if (inputId === VALID_ID && inputPass === VALID_PASS) {
-    if (remember) {
-      localStorage.setItem("iade_eats_auth", "true");
+    function checkAuthOnLoad() {
+      const savedAuth = localStorage.getItem("iade_eats_auth");
+      if (savedAuth === "true") {
+        document.getElementById("login-overlay").style.display = "none";
+      }
     }
-    document.getElementById("login-overlay").style.display = "none";
-  } else {
-    errorMsg.style.display = "block";
-  }
-}    
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const inputId = document.getElementById("auth-id").value;
+      const inputPass = document.getElementById("auth-pass").value;
+      const remember = document.getElementById("remember-me").checked;
+      const errorMsg = document.getElementById("login-error");
+
+      if (inputId === VALID_ID && inputPass === VALID_PASS) {
+        if (remember) {
+          localStorage.setItem("iade_eats_auth", "true");
+        }
+        document.getElementById("login-overlay").style.display = "none";
+      } else {
+        errorMsg.style.display = "block";
+      }
+    }    
     
     const MAPPING = [
       { sector: "Urgences 🚨", rooms: ["S1", "S2"] },
@@ -242,7 +246,7 @@ function handleLogin(event) {
       if (tabId === 'tab1') document.getElementById('btn-tab1').classList.add('active');
       if (tabId === 'tab2') {
         document.getElementById('btn-tab2').classList.add('active');
-        fetchSavedData(); // Recharge les données depuis le Google Sheet à chaque ouverture
+        fetchSavedData();
       }
       
       document.getElementById(tabId).classList.add('active');
@@ -255,19 +259,10 @@ function handleLogin(event) {
           data.forEach(item => {
             updateSynthBadge(item.room, item.pauseType, item.status);
           });
+          checkPendingAlerts(data);
         })
         .catch(err => console.error("Erreur de récupération :", err));
     }
-
-    document.addEventListener("DOMContentLoaded", function() {
-      renderSectors();
-      renderSynthTable();
-      fetchSavedData(); // Charge l'état actuel dès l'ouverture de la page
-      
-      const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      const tsDisplay = document.getElementById('timestamp-display');
-      if (tsDisplay) tsDisplay.innerText = 'Date du jour : ' + today;
-    });
 
     function renderSectors() {
       const grid = document.getElementById('sectors-grid');
@@ -333,66 +328,60 @@ function handleLogin(event) {
       }).then(() => {
         document.getElementById('sync-status').innerText = "🟢 Enregistré !";
         updateSynthBadge(selectedRoom, pauseType, statusValue);
+        fetchSavedData();
       }).catch(() => {
         document.getElementById('sync-status').innerText = "🔴 Erreur";
       });
     }
 
-   function checkPendingAlerts(data) {
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinutes = now.getMinutes();
+    function checkPendingAlerts(data) {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinutes = now.getMinutes();
 
-  // Conversion de l'heure en minutes depuis minuit (ex: 12h30 = 750 min)
-  const currentTimeInMinutes = currentHour * 60 + currentMinutes;
-  const startTime = 12 * 60 + 30; // 12h30
-  const endTime = 14 * 60 + 30;   // 14h30
+      const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+      const startTime = 12 * 60 + 30; // 12h30
+      const endTime = 14 * 60 + 30;   // 14h30
 
-  const alertBox = document.getElementById('push-alert');
-  const alertMsg = document.getElementById('push-alert-message');
+      const alertBox = document.getElementById('push-alert');
+      const alertMsg = document.getElementById('push-alert-message');
 
-  // Helper pour retrouver le secteur d'une salle à partir de MAPPING
-  function getSectorForRoom(roomName) {
-    if (typeof MAPPING !== 'undefined') {
-      const match = MAPPING.find(m => m.rooms.includes(roomName));
-      if (match) return match.sector;
-    }
-    return "Secteur inconnu";
-  }
-
-  // 1. Vérification du créneau horaire (entre 12h30 et 14h30)
-  if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
-
-    // 2. Filtrage des alertes uniquement pour la pause Déjeuner / Repas
-    const lunchAlerts = data.filter(item => {
-      const isLunch = item.pauseType === "Déjeuner" || item.pauseType === "Repas";
-      const needsHelp = item.status === "Besoin d'un relais" || 
-                        item.status === "Besoin relais" || 
-                        item.status === "Non effectuée";
-      return isLunch && needsHelp;
-    });
-
-    // 3. Génération des messages spécifiques par salle
-    if (lunchAlerts.length > 0 && alertBox && alertMsg) {
-      const messages = lunchAlerts.map(item => {
-        const sector = getSectorForRoom(item.room);
-        if (item.status === "Non effectuée") {
-          return `L'IADE de la salle ${item.room} dans le secteur ${sector} n'a pas déjeuné`;
-        } else {
-          return `L'IADE de la salle ${item.room} dans le secteur ${sector} a besoin d'un relais`;
+      function getSectorForRoom(roomName) {
+        if (typeof MAPPING !== 'undefined') {
+          const match = MAPPING.find(m => m.rooms.includes(roomName));
+          if (match) return match.sector;
         }
-      });
+        return "Secteur inconnu";
+      }
 
-      alertMsg.innerHTML = "🚨 <strong>Alerte Déjeuner :</strong><br>• " + messages.join("<br>• ");
-      alertBox.style.display = 'block';
-    } else if (alertBox) {
-      alertBox.style.display = 'none';
+      if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
+        const lunchAlerts = data.filter(item => {
+          const isLunch = item.pauseType === "Déjeuner" || item.pauseType === "Repas";
+          const needsHelp = item.status === "Besoin d'un relais" || 
+                            item.status === "Besoin relais" || 
+                            item.status === "Non effectuée";
+          return isLunch && needsHelp;
+        });
+
+        if (lunchAlerts.length > 0 && alertBox && alertMsg) {
+          const messages = lunchAlerts.map(item => {
+            const sector = getSectorForRoom(item.room);
+            if (item.status === "Non effectuée") {
+              return `L'IADE de la salle ${item.room} dans le secteur ${sector} n'a pas déjeuné`;
+            } else {
+              return `L'IADE de la salle ${item.room} dans le secteur ${sector} a besoin d'un relais`;
+            }
+          });
+
+          alertMsg.innerHTML = "🚨 <strong>Alerte Déjeuner :</strong><br>• " + messages.join("<br>• ");
+          alertBox.style.display = 'block';
+        } else if (alertBox) {
+          alertBox.style.display = 'none';
+        }
+      } else {
+        if (alertBox) alertBox.style.display = 'none';
+      }
     }
-
-  } else {
-    // Hors du créneau 12h30 - 14h30
-    if (alertBox) alertBox.style.display = 'none';
-  }
 
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
@@ -429,36 +418,29 @@ function handleLogin(event) {
     }
 
     function updateSynthBadge(room, pauseType, status) {
-  const cellId = 'cell-' + room + '-' + pauseType.replace(/\s+/g, '');
-  const cell = document.getElementById(cellId);
-  if (!cell) return;
+      const cellId = 'cell-' + room + '-' + pauseType.replace(/\s+/g, '');
+      const cell = document.getElementById(cellId);
+      if (!cell) return;
 
-  let badgeHTML = '-';
-  if (status === 'Effectuée') badgeHTML = '<span class="badge bg-green">V</span>';
-  else if (status === "Pause prévue avec l'équipe") badgeHTML = '<span class="badge bg-blue">P</span>';
-  else if (status === "Besoin d'un relais") badgeHTML = '<span class="badge bg-orange">B</span>';
-  else if (status === 'Non effectuée') badgeHTML = '<span class="badge bg-red">X</span>';
+      let badgeHTML = '-';
+      if (status === 'Effectuée') badgeHTML = '<span class="badge bg-green">V</span>';
+      else if (status === "Pause prévue avec l'équipe") badgeHTML = '<span class="badge bg-blue">P</span>';
+      else if (status === "Besoin d'un relais") badgeHTML = '<span class="badge bg-orange">B</span>';
+      else if (status === 'Non effectuée') badgeHTML = '<span class="badge bg-red">X</span>';
 
-  cell.innerHTML = badgeHTML;
-}
+      cell.innerHTML = badgeHTML;
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
-  checkAuthOnLoad(); // <-- Vérifie si l'utilisateur est déjà connecté
-  
-  renderSectors();
-  renderSynthTable();
-  fetchSavedData();
-  
-  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const tsDisplay = document.getElementById('timestamp-display');
-  if (tsDisplay) tsDisplay.innerText = 'Date du jour : ' + today;
-});
-    
-    document.addEventListener("DOMContentLoaded", function() {
+      checkAuthOnLoad();
       renderSectors();
       renderSynthTable();
+      fetchSavedData();
+      
       const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       const tsDisplay = document.getElementById('timestamp-display');
       if (tsDisplay) tsDisplay.innerText = 'Date du jour : ' + today;
     });
   </script>
+</body>
+</html>
