@@ -289,18 +289,18 @@
     }
 
     function updateSynthBadge(room, pauseType, status) {
-      const cellId = 'cell-' + room + '-' + p.replace(/\s+/g, '');
-      const cell = document.getElementById(cellId);
-      if (!cell) return;
+  const cellId = 'cell-' + room + '-' + pauseType.replace(/\s+/g, '');
+  const cell = document.getElementById(cellId);
+  if (!cell) return;
 
-      let badgeHTML = '-';
-      if (status === 'Effectuée') badgeHTML = '<span class="badge bg-green">V</span>';
-      else if (status === 'Pause prévue avec l\'équipe') badgeHTML = '<span class="badge bg-blue">P</span>';
-      else if (status === 'Besoin d\'un relais') badgeHTML = '<span class="badge bg-orange">B</span>';
-      else if (status === 'Non effectuée') badgeHTML = '<span class="badge bg-red">X</span>';
+  let badgeHTML = '-';
+  if (status === 'Effectuée') badgeHTML = '<span class="badge bg-green">V</span>';
+  else if (status === "Pause prévue avec l'équipe") badgeHTML = '<span class="badge bg-blue">P</span>';
+  else if (status === "Besoin d'un relais") badgeHTML = '<span class="badge bg-orange">B</span>';
+  else if (status === 'Non effectuée') badgeHTML = '<span class="badge bg-red">X</span>';
 
-      cell.innerHTML = badgeHTML;
-    }
+  cell.innerHTML = badgeHTML;
+}
 
     document.addEventListener("DOMContentLoaded", function() {
       renderSectors();
