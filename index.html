@@ -156,7 +156,7 @@
   <div id="sync-status">🟢 Prêt</div>
 
   <script>
-    var MAPPING = [
+    const MAPPING = [
       { sector: "Urgences 🚨", rooms: ["S1", "S2"] },
       { sector: "Neurochir 🧠", rooms: ["S3", "S4", "S5"] },
       { sector: "Ophtalmo 👁️", rooms: ["S6", "S7"] },
@@ -171,16 +171,13 @@
       { sector: "NRI ☢️", rooms: ["SBiplan", "SMonoplan", "STDM"] }
     ];
 
-    var selectedSector = null;
-    var selectedRoom = null;
-    var SCRIPT_URL = https://script.google.com/u/0/home/projects/1kIxMsIF2UsEsFwE1l1nypXHermQPyKw3nVIHUothYrkobqhodK-gcn_8 ;
+    let selectedSector = null;
+    let selectedRoom = null;
+    const SCRIPT_URL = "https://script.google.com/u/0/home/projects/1kIxMsIF2UsEsFwE1l1nypXHermQPyKw3nVIHUothYrkobqhodK-gcn_8";
 
     function switchTab(tabId) {
-      var tabs = document.querySelectorAll('.tab-btn');
-      var contents = document.querySelectorAll('.tab-content');
-      
-      tabs.forEach(function(btn) { btn.classList.remove('active'); });
-      contents.forEach(function(content) { content.classList.remove('active'); });
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       
       if (tabId === 'tab1') document.getElementById('btn-tab1').classList.add('active');
       if (tabId === 'tab2') document.getElementById('btn-tab2').classList.add('active');
@@ -189,10 +186,11 @@
     }
 
     function renderSectors() {
-      var grid = document.getElementById('sectors-grid');
+      const grid = document.getElementById('sectors-grid');
+      if (!grid) return;
       grid.innerHTML = '';
-      MAPPING.forEach(function(item) {
-        var btn = document.createElement('button');
+      MAPPING.forEach(item => {
+        const btn = document.createElement('button');
         btn.className = 'btn-option';
         btn.innerText = item.sector;
         btn.onclick = function() { selectSector(item, btn); };
@@ -201,20 +199,19 @@
     }
 
     function selectSector(item, btn) {
-      var buttons = document.querySelectorAll('#sectors-grid .btn-option');
-      buttons.forEach(function(b) { b.classList.remove('selected'); });
+      document.querySelectorAll('#sectors-grid .btn-option').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       
       selectedSector = item;
       selectedRoom = null;
       document.getElementById('actions-box').style.display = 'none';
 
-      var roomsBox = document.getElementById('rooms-box');
-      var roomsGrid = document.getElementById('rooms-grid');
+      const roomsBox = document.getElementById('rooms-box');
+      const roomsGrid = document.getElementById('rooms-grid');
       roomsGrid.innerHTML = '';
 
-      item.rooms.forEach(function(room) {
-        var rBtn = document.createElement('button');
+      item.rooms.forEach(room => {
+        const rBtn = document.createElement('button');
         rBtn.className = 'btn-option';
         rBtn.innerText = room;
         rBtn.onclick = function() { selectRoom(room, rBtn); };
@@ -225,24 +222,21 @@
     }
 
     function selectRoom(room, btn) {
-      var buttons = document.querySelectorAll('#rooms-grid .btn-option');
-      buttons.forEach(function(b) { b.classList.remove('selected'); });
+      document.querySelectorAll('#rooms-grid .btn-option').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       
       selectedRoom = room;
       document.getElementById('selected-room-title').innerText = '3. Statut pour ' + room + ' (' + selectedSector.sector + ')';
       document.getElementById('actions-box').style.display = 'block';
       
-      var statusBtns = document.querySelectorAll('.btn-status');
-      statusBtns.forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
     }
 
     function updateStatus(pauseType, statusValue, btn) {
       if (!selectedRoom) return;
 
-      var parentRow = btn.closest('.pause-row');
-      var rowBtns = parentRow.querySelectorAll('.btn-status');
-      rowBtns.forEach(function(b) { b.classList.remove('active'); });
+      const parentRow = btn.closest('.pause-row');
+      parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
       document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
@@ -252,37 +246,38 @@
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ room: selectedRoom, pauseType: pauseType, status: statusValue })
-      }).then(function() {
+      }).then(() => {
         document.getElementById('sync-status').innerText = "🟢 Enregistré !";
         updateSynthBadge(selectedRoom, pauseType, statusValue);
-      }).catch(function() {
+      }).catch(() => {
         document.getElementById('sync-status').innerText = "🔴 Erreur";
       });
     }
 
     function renderSynthTable() {
-      var tbody = document.getElementById('synth-tbody');
+      const tbody = document.getElementById('synth-tbody');
+      if (!tbody) return;
       tbody.innerHTML = '';
 
-      MAPPING.forEach(function(item) {
-        item.rooms.forEach(function(room, idx) {
-          var tr = document.createElement('tr');
+      MAPPING.forEach(item => {
+        item.rooms.forEach((room, idx) => {
+          const tr = document.createElement('tr');
 
           if (idx === 0) {
-            var tdSec = document.createElement('td');
+            const tdSec = document.createElement('td');
             tdSec.className = 'sector-cell';
             tdSec.rowSpan = item.rooms.length;
             tdSec.innerText = item.sector;
             tr.appendChild(tdSec);
           }
 
-          var tdRoom = document.createElement('td');
+          const tdRoom = document.createElement('td');
           tdRoom.style.fontWeight = 'bold';
           tdRoom.innerText = room;
           tr.appendChild(tdRoom);
 
-          ['Café matin', 'Déjeuner', 'Café après-midi', 'Relais Plein'].forEach(function(p) {
-            var td = document.createElement('td');
+          ['Café matin', 'Déjeuner', 'Café après-midi', 'Relais Plein'].forEach(p => {
+            const td = document.createElement('td');
             td.id = 'cell-' + room + '-' + p.replace(/\s+/g, '');
             td.innerText = '-';
             tr.appendChild(td);
@@ -294,11 +289,11 @@
     }
 
     function updateSynthBadge(room, pauseType, status) {
-      var cellId = 'cell-' + room + '-' + pauseType.replace(/\s+/g, '');
-      var cell = document.getElementById(cellId);
+      const cellId = 'cell-' + room + '-' + p.replace(/\s+/g, '');
+      const cell = document.getElementById(cellId);
       if (!cell) return;
 
-      var badgeHTML = '-';
+      let badgeHTML = '-';
       if (status === 'Effectuée') badgeHTML = '<span class="badge bg-green">V</span>';
       else if (status === 'Pause prévue avec l\'équipe') badgeHTML = '<span class="badge bg-blue">P</span>';
       else if (status === 'Besoin d\'un relais') badgeHTML = '<span class="badge bg-orange">B</span>';
@@ -307,12 +302,11 @@
       cell.innerHTML = badgeHTML;
     }
 
-    window.onload = function() {
+    document.addEventListener("DOMContentLoaded", function() {
       renderSectors();
       renderSynthTable();
-      var today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      document.getElementById('timestamp-display').innerText = 'Date du jour : ' + today;
-    };
+      const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const tsDisplay = document.getElementById('timestamp-display');
+      if (tsDisplay) tsDisplay.innerText = 'Date du jour : ' + today;
+    });
   </script>
-</body>
-</html>
