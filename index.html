@@ -280,14 +280,14 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab-btn active" onclick="switchTab('tab1')">Au menu ce jour 🍽️</button>
-    <button class="tab-btn" onclick="switchTab('tab2')">Note du jour 📝</button>
+    <button class="tab-btn active" onclick="switchTab('tab1', this)">Au menu ce jour 🍽️</button>
+    <button class="tab-btn" onclick="switchTab('tab2', this)">Note du jour 📝</button>
   </nav>
 
   <!-- ONGLET 1 : SAISIE -->
   <div id="tab1" class="tab-content active">
     
-    <!-- Éape 1 : Choix du secteur -->
+    <!-- Étape 1 : Choix du secteur -->
     <div class="step-box">
       <div class="step-title">1. Sélectionnez votre secteur</div>
       <div class="grid-buttons" id="sectors-grid"></div>
@@ -404,21 +404,34 @@
     const SCRIPT_URL = https://script.google.com/u/0/home/projects/1kIxMsIF2UsEsFwE1l1nypXHermQPyKw3nVIHUothYrkobqhodK-gcn_8 ;
 
     // Initialisation au chargement
-    document.addEventListener("DOMContentLoaded", () => {
+    window.addEventListener("DOMContentLoaded", () => {
       renderSectors();
       renderSynthTable();
+      updateDateDisplay();
     });
 
-    function switchTab(tabId) {
+    function updateDateDisplay() {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const today = new Date().toLocaleDateString('fr-FR', options);
+      const dateElem = document.getElementById('timestamp-display');
+      if (dateElem) {
+        dateElem.innerText = `Date du jour : ${today}`;
+      }
+    }
+
+    function switchTab(tabId, element) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       
-      event.target.classList.add('active');
+      if (element) {
+        element.classList.add('active');
+      }
       document.getElementById(tabId).classList.add('active');
     }
 
     function renderSectors() {
       const grid = document.getElementById('sectors-grid');
+      if (!grid) return;
       grid.innerHTML = '';
       MAPPING.forEach(item => {
         const btn = document.createElement('button');
@@ -504,6 +517,7 @@
 
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
+      if (!tbody) return;
       tbody.innerHTML = '';
 
       MAPPING.forEach(item => {
