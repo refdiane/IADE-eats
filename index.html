@@ -1,520 +1,555 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionnaire de Saisie Quotidienne</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IADE Eats</title>
+  <style>
+    :root {
+      --primary-color: #00b074;
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --text-color: #2c3e50;
+      
+      /* Couleurs de statut */
+      --color-green: #2ecc71;
+      --color-orange: #f39c12;
+      --color-red: #e74c3c;
+      --color-blue: #3498db;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding-bottom: 70px;
+    }
+
+    /* En-tête */
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      margin-top: 5px;
+      opacity: 0.9;
+    }
+
+    /* Navigation Onglets */
+    nav.tabs {
+      display: flex;
+      justify-content: space-around;
+      background: #fff;
+      border-bottom: 2px solid #ddd;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #7f8c8d;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 15px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Onglet 1 : Saisie */
+    .step-box {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .step-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-align: center;
+      color: #34495e;
+      background: #eef2f5;
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    .grid-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .btn-option {
+      padding: 12px 8px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .btn-option:hover, .btn-option.selected {
+      border-color: var(--primary-color);
+      background-color: #e8f8f5;
+      color: var(--primary-color);
+    }
+
+    /* Actions Pause */
+    .pause-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed #ddd;
+    }
+
+    .pause-label {
+      font-weight: bold;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-status {
+      flex: 1;
+      min-width: 90px;
+      padding: 10px 5px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-status.active {
+      opacity: 1;
+      transform: scale(1.03);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .bg-green { background-color: var(--color-green); }
+    .bg-orange { background-color: var(--color-orange); }
+    .bg-red { background-color: var(--color-red); }
+    .bg-blue { background-color: var(--color-blue); }
+
+    /* Onglet 2 : Synthèse / Tableau */
+    .timestamp-box {
+      text-align: right;
+      font-size: 0.85rem;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+
+    .legend-box {
+      display: flex;
+      justify-content: space-around;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    table.synth-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    table.synth-table th, table.synth-table td {
+      padding: 10px 8px;
+      text-align: center;
+      border: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+
+    table.synth-table th {
+      background: #34495e;
+      color: white;
+      font-weight: 600;
+    }
+
+    td.sector-cell {
+      font-weight: bold;
+      background: #f8f9fa;
+      text-align: left;
+    }
+
+    td.room-cell {
+      font-weight: 600;
+    }
+
+    /* Feedback de synchronisation */
+    #sync-status {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      background: #34495e;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
+<body>
 
-    <!-- Header & Navigation -->
-    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-indigo-500 rounded-lg">
-                        <i class="fa-solid fa-clipboard-list text-xl text-white"></i>
-                    </div>
-                    <span class="font-bold text-xl tracking-tight">Journal du Jour</span>
-                </div>
-                <!-- Information de la date du jour -->
-                <div class="text-sm bg-indigo-700/60 px-3 py-1.5 rounded-full font-medium flex items-center gap-2">
-                    <i class="fa-regular fa-calendar-check"></i>
-                    <span id="current-date-display">Aujourd'hui</span>
-                </div>
-            </div>
+  <header>
+    <h1>IADE Eats</h1>
+    <p>Application de suivi des niveaux en temps réel (stomacal, vésical, caféinique...) • Anonymat assumé</p>
+  </header>
 
-            <!-- Onglets (Tabs) Navigation -->
-            <div class="flex space-x-2 border-b border-indigo-500/40 mt-2">
-                <button id="tab-btn-saisie" onclick="switchTab('saisie')" 
-                    class="py-3 px-6 font-semibold text-sm transition-all border-b-2 border-white text-white flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>Saisie du jour</span>
-                </button>
-                <button id="tab-btn-recap" onclick="switchTab('recap')" 
-                    class="py-3 px-6 font-semibold text-sm transition-all border-b-2 border-transparent text-indigo-200 hover:text-white hover:border-indigo-300 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>Informations saisies</span>
-                    <span id="badge-count" class="ml-1 bg-white text-indigo-600 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">0</span>
-                </button>
-            </div>
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tab1')">Au menu ce jour 🍽️</button>
+    <button class="tab-btn" onclick="switchTab('tab2')">Note du jour 📝</button>
+  </nav>
+
+  <!-- ONGLET 1 : SAISIE -->
+  <div id="tab1" class="tab-content active">
+    
+    <!-- Éape 1 : Choix du secteur -->
+    <div class="step-box">
+      <div class="step-title">1. Sélectionnez votre secteur</div>
+      <div class="grid-buttons" id="sectors-grid"></div>
+    </div>
+
+    <!-- Étape 2 : Choix de la salle -->
+    <div class="step-box" id="rooms-box" style="display: none;">
+      <div class="step-title">2. Sélectionnez votre salle</div>
+      <div class="grid-buttons" id="rooms-grid"></div>
+    </div>
+
+    <!-- Étape 3 : Actions Pauses -->
+    <div class="step-box" id="actions-box" style="display: none;">
+      <div class="step-title" id="selected-room-title">3. Statut des relais</div>
+      
+      <!-- Café Matin -->
+      <div class="pause-row">
+        <div class="pause-label">Café matin ☕</div>
+        <div class="status-group">
+          <button class="btn-status bg-green" onclick="updateStatus('Café matin', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Café matin', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Café matin', 'Non effectuée', this)">Non effectuée</button>
         </div>
-    </header>
+      </div>
 
-    <!-- Content Area -->
-    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Déjeuner -->
+      <div class="pause-row">
+        <div class="pause-label">Déjeuner 🍽️</div>
+        <div class="status-group">
+          <button class="btn-status bg-green" onclick="updateStatus('Déjeuner', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-blue" onclick="updateStatus('Déjeuner', 'Pause prévue avec l\'équipe', this)">Pause prévue</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Déjeuner', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Déjeuner', 'Non effectuée', this)">Non effectuée</button>
+        </div>
+      </div>
 
-        <!-- ONGLET 1: Saisie de la journée -->
-        <section id="content-saisie" class="block space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8">
-                <div class="mb-6 border-b border-slate-100 pb-4">
-                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-circle-plus text-indigo-600"></i>
-                        Nouvelle entrée
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-1">Renseignez les détails des activités, notes ou évènements de votre journée.</p>
-                </div>
+      <!-- Café Après-midi -->
+      <div class="pause-row">
+        <div class="pause-label">Café après-midi ☕</div>
+        <div class="status-group">
+          <button class="btn-status bg-green" onclick="updateStatus('Café après-midi', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Café après-midi', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Café après-midi', 'Non effectuée', this)">Non effectuée</button>
+        </div>
+      </div>
 
-                <form id="entry-form" onsubmit="handleFormSubmit(event)" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Heure / Moment -->
-                        <div>
-                            <label for="entry-time" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-                                Heure / Horodatage
-                            </label>
-                            <input type="time" id="entry-time" required 
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700">
-                        </div>
+      <!-- Relais Plein -->
+      <div class="pause-row">
+        <div class="pause-label">Relais Plein 🛒</div>
+        <div class="status-group">
+          <button class="btn-status bg-green" onclick="updateStatus('Relais Plein', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Relais Plein', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Relais Plein', 'Non effectuée', this)">Non effectuée</button>
+        </div>
+      </div>
 
-                        <!-- Catégorie -->
-                        <div>
-                            <label for="entry-category" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-                                Catégorie
-                            </label>
-                            <select id="entry-category" required 
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700 bg-white">
-                                <option value="Tâche">Tâche / Travail</option>
-                                <option value="Réunion">Réunion / Échange</option>
-                                <option value="Note">Note / Remarque</option>
-                                <option value="Incidence">Incidence / Problème</option>
-                                <option value="Autre">Autre</option>
-                            </select>
-                        </div>
+    </div>
 
-                        <!-- Intervenant / Responsable -->
-                        <div>
-                            <label for="entry-author" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-                                Auteur / Intervenant
-                            </label>
-                            <input type="text" id="entry-author" placeholder="ex: Marc D." required 
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700">
-                        </div>
-                    </div>
+  </div>
 
-                    <!-- Titre / Sujet principal -->
-                    <div>
-                        <label for="entry-title" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-                            Objet / Titre résumé
-                        </label>
-                        <input type="text" id="entry-title" placeholder="Ex: Validation du rapport trimestriel" required 
-                            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700">
-                    </div>
+  <!-- ONGLET 2 : SYNTHÈSE -->
+  <div id="tab2" class="tab-content">
+    
+    <div class="timestamp-box" id="timestamp-display">Date du jour : Chargement...</div>
 
-                    <!-- Description détaillée -->
-                    <div>
-                        <label for="entry-details" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-                            Détails & Informations saisies
-                        </label>
-                        <textarea id="entry-details" rows="4" placeholder="Saisissez ici toutes les informations, observations ou résultats importants..." required
-                            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-700"></textarea>
-                    </div>
+    <div class="legend-box">
+      <div class="legend-item"><span class="badge bg-green">V</span> Effectuée</div>
+      <div class="legend-item"><span class="badge bg-blue">P</span> Pause prévue</div>
+      <div class="legend-item"><span class="badge bg-orange">B</span> Besoin relais</div>
+      <div class="legend-item"><span class="badge bg-red">X</span> Non effectuée</div>
+    </div>
 
-                    <!-- Priority & Status -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Niveau de Priorité</label>
-                            <div class="flex items-center space-x-4">
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="radio" name="priority" value="Normale" checked class="text-indigo-600 focus:ring-indigo-500">
-                                    <span class="ml-2 text-sm text-slate-700">Normale</span>
-                                </label>
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="radio" name="priority" value="Importante" class="text-amber-600 focus:ring-amber-500">
-                                    <span class="ml-2 text-sm text-slate-700">Importante</span>
-                                </label>
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="radio" name="priority" value="Urgente" class="text-rose-600 focus:ring-rose-500">
-                                    <span class="ml-2 text-sm text-slate-700">Urgente</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+    <table class="synth-table">
+      <thead>
+        <tr>
+          <th>Secteurs</th>
+          <th>Salles</th>
+          <th>Café matin☕</th>
+          <th>Déjeuner🍽️</th>
+          <th>Café p.m.☕</th>
+          <th>Relais🛒</th>
+        </tr>
+      </thead>
+      <tbody id="synth-tbody">
+        <!-- Rempli dynamiquement -->
+      </tbody>
+    </table>
 
-                    <!-- Boutons de soumission -->
-                    <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                        <button type="reset" class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 transition">
-                            Réinitialiser
-                        </button>
-                        <button type="submit" 
-                            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-md hover:shadow-indigo-200 transition flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk"></i>
-                            Enregistrer l'information
-                        </button>
-                    </div>
-                </form>
-            </div>
+  </div>
 
-            <!-- Toast de confirmation -->
-            <div id="toast-success" class="hidden fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 transition-all transform translate-y-0">
-                <i class="fa-solid fa-circle-check text-xl"></i>
-                <span class="font-medium">Information enregistrée avec succès !</span>
-            </div>
-        </section>
+  <div id="sync-status">🟢 Prêt</div>
 
-        <!-- ONGLET 2: Récapitulatif des informations de la journée -->
-        <section id="content-recap" class="hidden space-y-6">
+  <script>
+    // Configuration des données Métier
+    const MAPPING = [
+      { sector: "Urgences 🚨", rooms: ["S1", "S2"] },
+      { sector: "Neurochir 🧠", rooms: ["S3", "S4", "S5"] },
+      { sector: "Ophtalmo 👁️", rooms: ["S6", "S7"] },
+      { sector: "Uro 🚽", rooms: ["S8", "S9", "S20"] },
+      { sector: "Traumato 🔨", rooms: ["S10", "S15"] },
+      { sector: "Ortho 🦴", rooms: ["S11", "S12", "S13", "S14"] },
+      { sector: "Rép 👄", rooms: ["S17", "S18", "S19"] },
+      { sector: "Cardio 🫀", rooms: ["S21", "S22"] },
+      { sector: "Vasculaire 🩸", rooms: ["S23", "S24", "S25"] },
+      { sector: "Thorax 🫁", rooms: ["S26", "S27", "S28"] },
+      { sector: "SSPI Nord-Nord 🏥", rooms: ["SSPI Nord-Nord"] },
+      { sector: "NRI ☢️", rooms: ["SBiplan", "SMonoplan", "STDM"] }
+    ];
 
-            <!-- KPI Metrics / Résumé synthétique -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                    <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
-                        <i class="fa-solid fa-file-lines text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Entrées aujourd'hui</p>
-                        <p id="stat-total" class="text-2xl font-bold text-slate-800">0</p>
-                    </div>
-                </div>
+    let selectedSector = null;
+    let selectedRoom = null;
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                    <div class="p-3 bg-amber-100 text-amber-600 rounded-xl">
-                        <i class="fa-solid fa-clock text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dernière Saisie</p>
-                        <p id="stat-last-time" class="text-2xl font-bold text-slate-800">--:--</p>
-                    </div>
-                </div>
+    // URL de votre Web App Google Apps Script
+    const SCRIPT_URL = https://script.google.com/u/0/home/projects/1kIxMsIF2UsEsFwE1l1nypXHermQPyKw3nVIHUothYrkobqhodK-gcn_8 ;
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                    <div class="p-3 bg-rose-100 text-rose-600 rounded-xl">
-                        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Urgences / Prioritaires</p>
-                        <p id="stat-urgent" class="text-2xl font-bold text-slate-800">0</p>
-                    </div>
-                </div>
-            </div>
+    // Initialisation au chargement
+    document.addEventListener("DOMContentLoaded", () => {
+      renderSectors();
+      renderSynthTable();
+    });
 
-            <!-- Filtres et Actions de recherche -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-                <!-- Recherche -->
-                <div class="relative w-full md:w-80">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-                    <input type="text" id="search-input" oninput="filterEntries()" placeholder="Rechercher une saisie..." 
-                        class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
 
-                <!-- Filtre Catégorie -->
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <select id="filter-category" onchange="filterEntries()" class="px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="ALL">Toutes les catégories</option>
-                        <option value="Tâche">Tâche / Travail</option>
-                        <option value="Réunion">Réunion / Échange</option>
-                        <option value="Note">Note / Remarque</option>
-                        <option value="Incidence">Incidence / Problème</option>
-                        <option value="Autre">Autre</option>
-                    </select>
+    function renderSectors() {
+      const grid = document.getElementById('sectors-grid');
+      grid.innerHTML = '';
+      MAPPING.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        btn.innerText = item.sector;
+        btn.onclick = () => selectSector(item, btn);
+        grid.appendChild(btn);
+      });
+    }
 
-                    <button onclick="exportCSV()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-download"></i>
-                        <span>Exporter (CSV)</span>
-                    </button>
+    function selectSector(item, btn) {
+      document.querySelectorAll('#sectors-grid .btn-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      
+      selectedSector = item;
+      selectedRoom = null;
+      document.getElementById('actions-box').style.display = 'none';
 
-                    <button onclick="clearTodayEntries()" class="px-3 py-2 text-rose-600 hover:bg-rose-50 text-sm font-semibold rounded-xl transition" title="Effacer tout">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            </div>
+      // Rendre les salles
+      const roomsBox = document.getElementById('rooms-box');
+      const roomsGrid = document.getElementById('rooms-grid');
+      roomsGrid.innerHTML = '';
 
-            <!-- Tableau d'affichage des données de la journée -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-list text-indigo-600"></i>
-                        Historique des saisies de la journée
-                    </h3>
-                    <span class="text-xs text-slate-400" id="date-subtitle"></span>
-                </div>
+      item.rooms.forEach(room => {
+        const rBtn = document.createElement('button');
+        rBtn.className = 'btn-option';
+        rBtn.innerText = room;
+        rBtn.onclick = () => selectRoom(room, rBtn);
+        roomsGrid.appendChild(rBtn);
+      });
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                <th class="py-3 px-6">Heure</th>
-                                <th class="py-3 px-6">Catégorie</th>
-                                <th class="py-3 px-6">Objet & Informations</th>
-                                <th class="py-3 px-6">Auteur</th>
-                                <th class="py-3 px-6 text-center">Priorité</th>
-                                <th class="py-3 px-6 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="entries-table-body" class="divide-y divide-slate-100 text-sm">
-                            <!-- Injected by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
+      roomsBox.style.display = 'block';
+    }
 
-                <!-- Message si vide -->
-                <div id="empty-state" class="py-12 text-center hidden">
-                    <div class="p-4 bg-slate-100 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center text-slate-400">
-                        <i class="fa-regular fa-folder-open text-2xl"></i>
-                    </div>
-                    <p class="font-semibold text-slate-600">Aucune information saisie pour le moment</p>
-                    <p class="text-xs text-slate-400 mt-1">Utilisez le premier onglet pour ajouter de nouvelles données.</p>
-                </div>
-            </div>
-        </section>
-    </main>
+    function selectRoom(room, btn) {
+      document.querySelectorAll('#rooms-grid .btn-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      
+      selectedRoom = room;
+      document.getElementById('selected-room-title').innerText = `3. Statut des relais pour ${room} (${selectedSector.sector})`;
+      document.getElementById('actions-box').style.display = 'block';
 
-    <script>
-        // Initialisation de la date d'aujourd'hui (au format YYYY-MM-DD)
-        const todayKey = new Date().toISOString().split('T')[0];
+      // Réinitialiser la sélection visuelle des boutons de statut
+      document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
+    }
 
-        // Charger les entrées depuis le LocalStorage
-        function getStorageData() {
-            const data = localStorage.getItem('daily_app_data');
-            return data ? JSON.parse(data) : {};
-        }
+    function updateStatus(pauseType, statusValue, btn) {
+      if (!selectedRoom) return;
 
-        function saveStorageData(data) {
-            localStorage.setItem('daily_app_data', JSON.stringify(data));
-        }
+      // Effet visuel
+      const parentRow = btn.closest('.pause-row');
+      parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-        function getTodayEntries() {
-            const allData = getStorageData();
-            return allData[todayKey] || [];
-        }
+      // Indique la synchro
+      showSync("⏳ Enregistrement...");
 
-        function saveTodayEntries(entries) {
-            const allData = getStorageData();
-            allData[todayKey] = entries;
-            saveStorageData(allData);
-            updateBadge();
-        }
+      // Données à envoyer au Google Sheet
+      const payload = {
+        room: selectedRoom,
+        pauseType: pauseType,
+        status: statusValue
+      };
 
-        // Gestion de l'affichage de l'heure courante
-        document.addEventListener('DOMContentLoaded', () => {
-            // Afficher la date actuelle en français
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const dateFormatted = new Date().toLocaleDateString('fr-FR', options);
-            document.getElementById('current-date-display').innerText = dateFormatted;
-            document.getElementById('date-subtitle').innerText = dateFormatted;
+      // Envoi au Google Sheet via API
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }).then(() => {
+        showSync("🟢 Enregistré !");
+        updateSynthBadge(selectedRoom, pauseType, statusValue);
+      }).catch(err => {
+        showSync("🔴 Erreur de connexion");
+        console.error(err);
+      });
+    }
 
-            // Pré-remplir l'heure
-            const now = new Date();
-            const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            document.getElementById('entry-time').value = timeString;
+    function showSync(msg) {
+      document.getElementById('sync-status').innerText = msg;
+    }
 
-            updateBadge();
-            renderRecap();
+    function renderSynthTable() {
+      const tbody = document.getElementById('synth-tbody');
+      tbody.innerHTML = '';
+
+      MAPPING.forEach(item => {
+        item.rooms.forEach((room, idx) => {
+          const tr = document.createElement('tr');
+
+          // Fusion visuelle de la cellule secteur
+          if (idx === 0) {
+            const tdSec = document.createElement('td');
+            tdSec.className = 'sector-cell';
+            tdSec.rowSpan = item.rooms.length;
+            tdSec.innerText = item.sector;
+            tr.appendChild(tdSec);
+          }
+
+          const tdRoom = document.createElement('td');
+          tdRoom.className = 'room-cell';
+          tdRoom.innerText = room;
+          tr.appendChild(tdRoom);
+
+          // 4 colonnes pour les pauses
+          ['Café matin', 'Déjeuner', 'Café après-midi', 'Relais Plein'].forEach(p => {
+            const td = document.createElement('td');
+            td.id = `cell-${room}-${p.replace(/\s+/g, '')}`;
+            td.innerText = '-';
+            tr.appendChild(td);
+          });
+
+          tbody.appendChild(tr);
         });
+      });
+    }
 
-        // Navigation entre Onglets
-        function switchTab(tabName) {
-            const btnSaisie = document.getElementById('tab-btn-saisie');
-            const btnRecap = document.getElementById('tab-btn-recap');
-            const contentSaisie = document.getElementById('content-saisie');
-            const contentRecap = document.getElementById('content-recap');
+    function updateSynthBadge(room, pauseType, status) {
+      const cellId = `cell-${room}-${pauseType.replace(/\s+/g, '')}`;
+      const cell = document.getElementById(cellId);
+      if (!cell) return;
 
-            if (tabName === 'saisie') {
-                contentSaisie.classList.remove('hidden');
-                contentRecap.classList.add('hidden');
+      let badgeHTML = '-';
+      if (status === 'Effectuée') badgeHTML = '<span class="badge bg-green">V</span>';
+      else if (status === 'Pause prévue avec l\'équipe') badgeHTML = '<span class="badge bg-blue">P</span>';
+      else if (status === 'Besoin d\'un relais') badgeHTML = '<span class="badge bg-orange">B</span>';
+      else if (status === 'Non effectuée') badgeHTML = '<span class="badge bg-red">X</span>';
 
-                btnSaisie.className = "py-3 px-6 font-semibold text-sm transition-all border-b-2 border-white text-white flex items-center gap-2";
-                btnRecap.className = "py-3 px-6 font-semibold text-sm transition-all border-b-2 border-transparent text-indigo-200 hover:text-white hover:border-indigo-300 flex items-center gap-2";
-            } else {
-                contentSaisie.classList.add('hidden');
-                contentRecap.classList.remove('hidden');
-
-                btnRecap.className = "py-3 px-6 font-semibold text-sm transition-all border-b-2 border-white text-white flex items-center gap-2";
-                btnSaisie.className = "py-3 px-6 font-semibold text-sm transition-all border-b-2 border-transparent text-indigo-200 hover:text-white hover:border-indigo-300 flex items-center gap-2";
-
-                renderRecap();
-            }
-        }
-
-        // Soumission du Formulaire
-        function handleFormSubmit(e) {
-            e.preventDefault();
-
-            const time = document.getElementById('entry-time').value;
-            const category = document.getElementById('entry-category').value;
-            const author = document.getElementById('entry-author').value;
-            const title = document.getElementById('entry-title').value;
-            const details = document.getElementById('entry-details').value;
-            const priority = document.querySelector('input[name="priority"]:checked').value;
-
-            const newEntry = {
-                id: Date.now(),
-                time,
-                category,
-                author,
-                title,
-                details,
-                priority
-            };
-
-            const entries = getTodayEntries();
-            entries.unshift(newEntry); // Ajouter au début
-            saveTodayEntries(entries);
-
-            // Reset partiel du formulaire
-            document.getElementById('entry-title').value = '';
-            document.getElementById('entry-details').value = '';
-
-            // Notification Toast
-            showToast();
-        }
-
-        function showToast() {
-            const toast = document.getElementById('toast-success');
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        function updateBadge() {
-            const entries = getTodayEntries();
-            document.getElementById('badge-count').innerText = entries.length;
-        }
-
-        // Rendu du Récapitulatif (Onglet 2)
-        function renderRecap() {
-            const entries = getTodayEntries();
-            const tableBody = document.getElementById('entries-table-body');
-            const emptyState = document.getElementById('empty-state');
-
-            // Filtrage courant
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const filterCat = document.getElementById('filter-category').value;
-
-            const filtered = entries.filter(item => {
-                const matchesSearch = item.title.toLowerCase().includes(searchTerm) || 
-                                      item.details.toLowerCase().includes(searchTerm) ||
-                                      item.author.toLowerCase().includes(searchTerm);
-                const matchesCategory = (filterCat === 'ALL') || (item.category === filterCat);
-                return matchesSearch && matchesCategory;
-            });
-
-            // Update KPIs
-            document.getElementById('stat-total').innerText = entries.length;
-            document.getElementById('stat-last-time').innerText = entries.length > 0 ? entries[0].time : '--:--';
-            document.getElementById('stat-urgent').innerText = entries.filter(i => i.priority === 'Urgente').length;
-
-            tableBody.innerHTML = '';
-
-            if (filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-
-                filtered.forEach(entry => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50/80 transition";
-
-                    // Badge Priorité
-                    let priorityBadge = '';
-                    if (entry.priority === 'Urgente') {
-                        priorityBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-100 text-rose-700">Urgente</span>`;
-                    } else if (entry.priority === 'Importante') {
-                        priorityBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">Importante</span>`;
-                    } else {
-                        priorityBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">Normale</span>`;
-                    }
-
-                    // Badge Catégorie
-                    let catColor = "bg-indigo-50 text-indigo-700 border-indigo-200";
-                    if (entry.category === 'Réunion') catColor = "bg-sky-50 text-sky-700 border-sky-200";
-                    if (entry.category === 'Incidence') catColor = "bg-rose-50 text-rose-700 border-rose-200";
-                    if (entry.category === 'Note') catColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
-
-                    tr.innerHTML = `
-                        <td class="py-4 px-6 font-semibold text-slate-700 whitespace-nowrap">
-                            <i class="fa-regular fa-clock text-slate-400 mr-1.5"></i>${entry.time}
-                        </td>
-                        <td class="py-4 px-6 whitespace-nowrap">
-                            <span class="px-2.5 py-1 text-xs font-medium border rounded-lg ${catColor}">${entry.category}</span>
-                        </td>
-                        <td class="py-4 px-6 max-w-md">
-                            <p class="font-bold text-slate-800">${escapeHtml(entry.title)}</p>
-                            <p class="text-xs text-slate-500 mt-0.5 line-clamp-2">${escapeHtml(entry.details)}</p>
-                        </td>
-                        <td class="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
-                            ${escapeHtml(entry.author)}
-                        </td>
-                        <td class="py-4 px-6 text-center whitespace-nowrap">
-                            ${priorityBadge}
-                        </td>
-                        <td class="py-4 px-6 text-right whitespace-nowrap">
-                            <button onclick="deleteEntry(${entry.id})" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition" title="Supprimer">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-            }
-        }
-
-        function filterEntries() {
-            renderRecap();
-        }
-
-        function deleteEntry(id) {
-            if (confirm("Voulez-vous vraiment supprimer cette saisie ?")) {
-                let entries = getTodayEntries();
-                entries = entries.filter(e => e.id !== id);
-                saveTodayEntries(entries);
-                renderRecap();
-            }
-        }
-
-        function clearTodayEntries() {
-            if (confirm("Attention: toutes les données saisies aujourd'hui seront réinitialisées. Continuer ?")) {
-                saveTodayEntries([]);
-                renderRecap();
-            }
-        }
-
-        function exportCSV() {
-            const entries = getTodayEntries();
-            if (entries.length === 0) {
-                alert("Aucune donnée à exporter.");
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,Heure;Categorie;Auteur;Titre;Details;Priorite\n";
-            entries.forEach(e => {
-                const row = `"${e.time}";"${e.category}";"${e.author}";"${e.title.replace(/"/g, '""')}";"${e.details.replace(/"/g, '""')}";"${e.priority}"`;
-                csvContent += row + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Saisie_Journee_${todayKey}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-    </script>
+      cell.innerHTML = badgeHTML;
+    }
+  </script>
 </body>
 </html>
-```eof
-
-L'application a été structurée avec les deux onglets :
-1. **Saisie du jour** : Formulaire permettant de renseigner l'heure, la catégorie, l'auteur, l'objet, le détail et la priorité.
-2. **Informations saisies** : Tableau récapitulatif dynamique avec indicateurs clés (KPIs), recherche, filtres par catégorie, suppression et export CSV des données enregistrées dans la journée.
