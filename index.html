@@ -338,23 +338,32 @@ function handleLogin(event) {
       });
     }
 
-    function checkPendingAlerts(data) {
+   function checkPendingAlerts(data) {
   const now = new Date();
   const currentHour = now.getHours();
   const currentMinutes = now.getMinutes();
 
-  // Convertit l'heure actuelle en minutes depuis minuit (ex: 12h30 = 750 min)
+  // Conversion de l'heure en minutes depuis minuit (ex: 12h30 = 750 min)
   const currentTimeInMinutes = currentHour * 60 + currentMinutes;
-  const startTime = 12 * 60 + 30; // 12h30 = 750 min
-  const endTime = 14 * 60 + 30;   // 14h30 = 870 min
+  const startTime = 12 * 60 + 30; // 12h30
+  const endTime = 14 * 60 + 30;   // 14h30
 
   const alertBox = document.getElementById('push-alert');
   const alertMsg = document.getElementById('push-alert-message');
 
+  // Helper pour retrouver le secteur d'une salle à partir de MAPPING
+  function getSectorForRoom(roomName) {
+    if (typeof MAPPING !== 'undefined') {
+      const match = MAPPING.find(m => m.rooms.includes(roomName));
+      if (match) return match.sector;
+    }
+    return "Secteur inconnu";
+  }
+
   // 1. Vérification du créneau horaire (entre 12h30 et 14h30)
   if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
 
-    // 2. Filtrage des alertes UNIQUEMENT pour la pause Déjeuner / Repas
+    // 2. Filtrage des alertes uniquement pour la pause Déjeuner / Repas
     const lunchAlerts = data.filter(item => {
       const isLunch = item.pauseType === "Déjeuner" || item.pauseType === "Repas";
       const needsHelp = item.status === "Besoin d'un relais" || 
@@ -363,23 +372,25 @@ function handleLogin(event) {
       return isLunch && needsHelp;
     });
 
-    // 3. Affichage du message si des alertes sont trouvées
+    // 3. Génération des messages spécifiques par salle
     if (lunchAlerts.length > 0 && alertBox && alertMsg) {
-      const totalRelais = lunchAlerts.filter(a => a.status.includes("Besoin")).length;
-      const totalNonEff = lunchAlerts.filter(a => a.status === "Non effectuée").length;
+      const messages = lunchAlerts.map(item => {
+        const sector = getSectorForRoom(item.room);
+        if (item.status === "Non effectuée") {
+          return `L'IADE de la salle ${item.room} dans le secteur ${sector} n'a pas déjeuné`;
+        } else {
+          return `L'IADE de la salle ${item.room} dans le secteur ${sector} a besoin d'un relais`;
+        }
+      });
 
-      let text = "🚨 Alerte Déjeuner (12h30 - 14h30) : ";
-      if (totalRelais > 0) text += `${totalRelais} salle(s) demandent un relais repas. `;
-      if (totalNonEff > 0) text += `${totalNonEff} repas non effectué(s).`;
-
-      alertMsg.innerText = text;
+      alertMsg.innerHTML = "🚨 <strong>Alerte Déjeuner :</strong><br>• " + messages.join("<br>• ");
       alertBox.style.display = 'block';
     } else if (alertBox) {
       alertBox.style.display = 'none';
     }
 
   } else {
-    // Hors du créneau 12h30 - 14h30 : on masque la bannière
+    // Hors du créneau 12h30 - 14h30
     if (alertBox) alertBox.style.display = 'none';
   }
 
