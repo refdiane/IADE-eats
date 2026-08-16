@@ -338,6 +338,51 @@ function handleLogin(event) {
       });
     }
 
+    function checkPendingAlerts(data) {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinutes = now.getMinutes();
+
+  // Convertit l'heure actuelle en minutes depuis minuit (ex: 12h30 = 750 min)
+  const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+  const startTime = 12 * 60 + 30; // 12h30 = 750 min
+  const endTime = 14 * 60 + 30;   // 14h30 = 870 min
+
+  const alertBox = document.getElementById('push-alert');
+  const alertMsg = document.getElementById('push-alert-message');
+
+  // 1. Vérification du créneau horaire (entre 12h30 et 14h30)
+  if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
+
+    // 2. Filtrage des alertes UNIQUEMENT pour la pause Déjeuner / Repas
+    const lunchAlerts = data.filter(item => {
+      const isLunch = item.pauseType === "Déjeuner" || item.pauseType === "Repas";
+      const needsHelp = item.status === "Besoin d'un relais" || 
+                        item.status === "Besoin relais" || 
+                        item.status === "Non effectuée";
+      return isLunch && needsHelp;
+    });
+
+    // 3. Affichage du message si des alertes sont trouvées
+    if (lunchAlerts.length > 0 && alertBox && alertMsg) {
+      const totalRelais = lunchAlerts.filter(a => a.status.includes("Besoin")).length;
+      const totalNonEff = lunchAlerts.filter(a => a.status === "Non effectuée").length;
+
+      let text = "🚨 Alerte Déjeuner (12h30 - 14h30) : ";
+      if (totalRelais > 0) text += `${totalRelais} salle(s) demandent un relais repas. `;
+      if (totalNonEff > 0) text += `${totalNonEff} repas non effectué(s).`;
+
+      alertMsg.innerText = text;
+      alertBox.style.display = 'block';
+    } else if (alertBox) {
+      alertBox.style.display = 'none';
+    }
+
+  } else {
+    // Hors du créneau 12h30 - 14h30 : on masque la bannière
+    if (alertBox) alertBox.style.display = 'none';
+  }
+
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
       if (!tbody) return;
