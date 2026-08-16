@@ -63,6 +63,35 @@
 </head>
 <body>
 
+  <!-- Modal de connexion -->
+<div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+  <div style="background: white; padding: 30px; border-radius: 12px; max-width: 350px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+    <h2 style="margin-top: 0; color: #1e293b;">Connexion IADE Eats</h2>
+    <p style="color: #64748b; font-size: 0.9rem;">Veuillez saisir vos identifiants pour accéder à l'application.</p>
+    
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div style="margin-bottom: 15px; text-align: left;">
+        <label style="font-size: 0.85rem; font-weight: bold; color: #334155;">Identifiant</label>
+        <input type="text" id="auth-id" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      
+      <div style="margin-bottom: 15px; text-align: left;">
+        <label style="font-size: 0.85rem; font-weight: bold; color: #334155;">Mot de passe</label>
+        <input type="password" id="auth-pass" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 20px; text-align: left; display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="remember-me" style="width: 16px; height: 16px;">
+        <label for="remember-me" style="font-size: 0.85rem; color: #475569; cursor: pointer;">Se souvenir de moi</label>
+      </div>
+
+      <p id="login-error" style="color: #dc2626; font-size: 0.85rem; display: none; margin-bottom: 15px;">Identifiant ou mot de passe incorrect.</p>
+
+      <button type="submit" style="width: 100%; background: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Se connecter</button>
+    </form>
+  </div>
+</div>
+  
   <header style="display: flex; align-items: center; padding: 12px 20px; gap: 15px;">
     <img src="https://i.ibb.co/SX6jDtYm/logo.png" alt="Logo IADE Eats" style="height: 4cm; width: 4cm; border-radius: 8px; object-fit: cover;">
     <div>
@@ -159,6 +188,34 @@
   <div id="sync-status">🟢 Prêt</div>
 
   <script>
+    
+const VALID_ID = "CHUnice";
+const VALID_PASS = "2974";
+
+function checkAuthOnLoad() {
+  const savedAuth = localStorage.getItem("iade_eats_auth");
+  if (savedAuth === "true") {
+    document.getElementById("login-overlay").style.display = "none";
+  }
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const inputId = document.getElementById("auth-id").value;
+  const inputPass = document.getElementById("auth-pass").value;
+  const remember = document.getElementById("remember-me").checked;
+  const errorMsg = document.getElementById("login-error");
+
+  if (inputId === VALID_ID && inputPass === VALID_PASS) {
+    if (remember) {
+      localStorage.setItem("iade_eats_auth", "true");
+    }
+    document.getElementById("login-overlay").style.display = "none";
+  } else {
+    errorMsg.style.display = "block";
+  }
+}    
+    
     const MAPPING = [
       { sector: "Urgences 🚨", rooms: ["S1", "S2"] },
       { sector: "Neurochir 🧠", rooms: ["S3", "S4", "S5"] },
@@ -329,6 +386,18 @@
   cell.innerHTML = badgeHTML;
 }
 
+    document.addEventListener("DOMContentLoaded", function() {
+  checkAuthOnLoad(); // <-- Vérifie si l'utilisateur est déjà connecté
+  
+  renderSectors();
+  renderSynthTable();
+  fetchSavedData();
+  
+  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const tsDisplay = document.getElementById('timestamp-display');
+  if (tsDisplay) tsDisplay.innerText = 'Date du jour : ' + today;
+});
+    
     document.addEventListener("DOMContentLoaded", function() {
       renderSectors();
       renderSynthTable();
