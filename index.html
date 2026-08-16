@@ -183,10 +183,34 @@
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       
       if (tabId === 'tab1') document.getElementById('btn-tab1').classList.add('active');
-      if (tabId === 'tab2') document.getElementById('btn-tab2').classList.add('active');
+      if (tabId === 'tab2') {
+        document.getElementById('btn-tab2').classList.add('active');
+        fetchSavedData(); // Recharge les données depuis le Google Sheet à chaque ouverture
+      }
       
       document.getElementById(tabId).classList.add('active');
     }
+
+    function fetchSavedData() {
+      fetch(SCRIPT_URL)
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(item => {
+            updateSynthBadge(item.room, item.pauseType, item.status);
+          });
+        })
+        .catch(err => console.error("Erreur de récupération :", err));
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      renderSectors();
+      renderSynthTable();
+      fetchSavedData(); // Charge l'état actuel dès l'ouverture de la page
+      
+      const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const tsDisplay = document.getElementById('timestamp-display');
+      if (tsDisplay) tsDisplay.innerText = 'Date du jour : ' + today;
+    });
 
     function renderSectors() {
       const grid = document.getElementById('sectors-grid');
