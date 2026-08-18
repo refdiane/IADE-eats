@@ -334,55 +334,78 @@
       });
     }
 
-    function checkPendingAlerts(data) {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinutes = now.getMinutes();
+   function checkPendingAlerts(data) {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinutes = now.getMinutes();
 
-      const currentTimeInMinutes = currentHour * 60 + currentMinutes;
-      const startTime = 12 * 60 + 30; // 12h30
-      const endTime = 14 * 60 + 30;   // 14h30
+  const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+  const startTime = 12 * 60 + 30; // 12h30
+  const endTime = 14 * 60 + 30;   // 14h30
 
-      const alertBox = document.getElementById('push-alert');
-      const alertMsg = document.getElementById('push-alert-message');
+  const alertBox = document.getElementById('push-alert');
+  const alertMsg = document.getElementById('push-alert-message');
 
-      function getSectorForRoom(roomName) {
-        if (typeof MAPPING !== 'undefined') {
-          const match = MAPPING.find(m => m.rooms.includes(roomName));
-          if (match) return match.sector;
-        }
-        return "Secteur inconnu";
-      }
-
-      if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
-        const lunchAlerts = data.filter(item => {
-          const isLunch = item.pauseType === "Déjeuner" || item.pauseType === "Repas";
-          const needsHelp = item.status === "Besoin d'un relais" || 
-                            item.status === "Besoin relais" || 
-                            item.status === "Non effectuée";
-          return isLunch && needsHelp;
-        });
-
-        if (lunchAlerts.length > 0 && alertBox && alertMsg) {
-          const messages = lunchAlerts.map(item => {
-            const sector = getSectorForRoom(item.room);
-            if (item.status === "Non effectuée") {
-              return `L'IADE de la salle ${item.room} dans le secteur ${sector} n'a pas déjeuné`;
-            } else {
-              return `L'IADE de la salle ${item.room} dans le secteur ${sector} a besoin d'un relais`;
-            }
-          });
-
-          alertMsg.innerHTML = "🚨 <strong>Alerte Déjeuner :</strong><br>• " + messages.join("<br>• ");
-          alertBox.style.display = 'block';
-        } else if (alertBox) {
-          alertBox.style.display = 'none';
-        }
-      } else {
-        if (alertBox) alertBox.style.display = 'none';
-      }
+  function getSectorForRoom(roomName) {
+    if (typeof MAPPING !== 'undefined') {
+      const match = MAPPING.find(m => m.rooms.includes(roomName));
+      if (match) return match.sector;
     }
+    return "Secteur inconnu";
+  }
 
+  // Vérification de la plage horaire 12h30 - 14h30
+  if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
+    const localRelays = getLocalRelays();
+
+    const lunchAlerts = data.filter(item => {
+      const isLunch = item.pauseType === "Déjeuner" || item.pauseType === "Repas";
+      const needsHelp = item.status === "Besoin d'un relais" || 
+                        item.status === "Besoin relais" || 
+                        item.status === "Non effectuée";
+      return isLunch && needsHelp;
+    });
+
+    if (lunchAlerts.length > 0 && alertBox && alertMsg) {
+      let html = `🚨 <strong>Alerte Déjeuner :</strong><ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
+
+      lunchAlerts.forEach(item => {
+        const sector = getSectorForRoom(item.room);
+        const key = item.room + '_' + item.pauseType;
+        const isDoneLocally = localRelays[key] === true;
+
+        let statusText = "";
+        if (item.status === "Non effectuée") {
+          statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) n'a pas déjeuné`;
+        } else {
+          statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais`;
+        }
+
+        html += `
+          <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <span>• ${statusText}</span>
+            ${
+              isDoneLocally 
+              ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
+              : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
+                         style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
+                    Remplacement effectué 👍
+                 </button>`
+            }
+          </li>`;
+      });
+
+      html += `</ul>`;
+      alertMsg.innerHTML = html;
+      alertBox.style.display = 'block';
+    } else if (alertBox) {
+      alertBox.style.display = 'none';
+    }
+  } else {
+    if (alertBox) alertBox.style.display = 'none';
+  }
+}
+    
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
       if (!tbody) return;
@@ -417,19 +440,37 @@
       });
     }
 
-    function updateSynthBadge(room, pauseType, status) {
-      const cellId = 'cell-' + room + '-' + pauseType.replace(/\s+/g, '');
-      const cell = document.getElementById(cellId);
-      if (!cell) return;
+  function updateSynthBadge(room, pauseType, status) {
+  let cleanType = pauseType;
+  if (pauseType === 'Café' || pauseType === 'Café matin') cleanType = 'Café';
+  else if (pauseType === 'Repas' || pauseType === 'Déjeuner') cleanType = 'Repas';
+  else if (pauseType === 'Café PM' || pauseType === 'Café après-midi') cleanType = 'CaféPM';
+  else if (pauseType === 'Plein' || pauseType === 'Relais Plein') cleanType = 'Plein';
 
-      let badgeHTML = '-';
-      if (status === 'Effectuée') badgeHTML = '<span class="badge bg-green">V</span>';
-      else if (status === "Pause prévue avec l'équipe") badgeHTML = '<span class="badge bg-blue">P</span>';
-      else if (status === "Besoin d'un relais") badgeHTML = '<span class="badge bg-orange">B</span>';
-      else if (status === 'Non effectuée') badgeHTML = '<span class="badge bg-red">X</span>';
+  const cellId = 'cell-' + room + '-' + cleanType;
+  const cell = document.getElementById(cellId);
+  if (!cell) return;
 
-      cell.innerHTML = badgeHTML;
-    }
+  const localRelays = getLocalRelays();
+  const key = room + '_' + pauseType;
+  const isDoneLocally = localRelays[key] === true;
+
+  let badgeHTML = '-';
+  
+  if (isDoneLocally) {
+    badgeHTML = '<span class="badge bg-green">👍</span>';
+  } else if (status === 'Effectuée') {
+    badgeHTML = '<span class="badge bg-green">V</span>';
+  } else if (status === "Pause prévue avec l'équipe" || status === "Pause prévue") {
+    badgeHTML = '<span class="badge bg-blue">P</span>';
+  } else if (status === "Besoin d'un relais" || status === "Besoin relais") {
+    badgeHTML = '<span class="badge bg-orange">B</span>';
+  } else if (status === 'Non effectuée') {
+    badgeHTML = '<span class="badge bg-red">X</span>';
+  }
+
+  cell.innerHTML = badgeHTML;
+}
 
     document.addEventListener("DOMContentLoaded", function() {
       checkAuthOnLoad();
