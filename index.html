@@ -239,6 +239,23 @@
     let selectedRoom = null;
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydPsjeyRnt4QhvHvj34z-P2IY3TXABlCemVGSPudkmQktQKJrDxqbMdJTJ6JqaXn4SiA/exec";
 
+    // Gestion du stockage local des relais validés
+    function getLocalRelays() {
+      try {
+        return JSON.parse(localStorage.getItem('iade_eats_local_relays') || '{}');
+      } catch(e) {
+        return {};
+      }
+    }
+
+    function resolveAlertLocally(room, pauseType) {
+      const localRelays = getLocalRelays();
+      const key = room + '_' + pauseType;
+      localRelays[key] = true;
+      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
+      fetchSavedData();
+    }
+
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -334,77 +351,76 @@
       });
     }
 
-   function checkPendingAlerts(data) {
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinutes = now.getMinutes();
+    function checkPendingAlerts(data) {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinutes = now.getMinutes();
 
-  const currentTimeInMinutes = currentHour * 60 + currentMinutes;
-  const startTime = 12 * 60 + 30; // 12h30
-  const endTime = 14 * 60 + 30;   // 14h30
+      const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+      const startTime = 12 * 60 + 30; // 12h30
+      const endTime = 14 * 60 + 30;   // 14h30
 
-  const alertBox = document.getElementById('push-alert');
-  const alertMsg = document.getElementById('push-alert-message');
+      const alertBox = document.getElementById('push-alert');
+      const alertMsg = document.getElementById('push-alert-message');
 
-  function getSectorForRoom(roomName) {
-    if (typeof MAPPING !== 'undefined') {
-      const match = MAPPING.find(m => m.rooms.includes(roomName));
-      if (match) return match.sector;
-    }
-    return "Secteur inconnu";
-  }
-
-  // Vérification de la plage horaire 12h30 - 14h30
-  if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
-    const localRelays = getLocalRelays();
-
-    const lunchAlerts = data.filter(item => {
-      const isLunch = item.pauseType === "Déjeuner" || item.pauseType === "Repas";
-      const needsHelp = item.status === "Besoin d'un relais" || 
-                        item.status === "Besoin relais" || 
-                        item.status === "Non effectuée";
-      return isLunch && needsHelp;
-    });
-
-    if (lunchAlerts.length > 0 && alertBox && alertMsg) {
-      let html = `🚨 <strong>Alerte Déjeuner :</strong><ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
-
-      lunchAlerts.forEach(item => {
-        const sector = getSectorForRoom(item.room);
-        const key = item.room + '_' + item.pauseType;
-        const isDoneLocally = localRelays[key] === true;
-
-        let statusText = "";
-        if (item.status === "Non effectuée") {
-          statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) n'a pas déjeuné`;
-        } else {
-          statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais`;
+      function getSectorForRoom(roomName) {
+        if (typeof MAPPING !== 'undefined') {
+          const match = MAPPING.find(m => m.rooms.includes(roomName));
+          if (match) return match.sector;
         }
+        return "Secteur inconnu";
+      }
 
-        html += `
-          <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-            <span>• ${statusText}</span>
-            ${
-              isDoneLocally 
-              ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
-              : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
-                         style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
-                    Remplacement effectué 👍
-                 </button>`
+      if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
+        const localRelays = getLocalRelays();
+
+        const lunchAlerts = data.filter(item => {
+          const isLunch = item.pauseType === "Déjeuner" || item.pauseType === "Repas";
+          const needsHelp = item.status === "Besoin d'un relais" || 
+                            item.status === "Besoin relais" || 
+                            item.status === "Non effectuée";
+          return isLunch && needsHelp;
+        });
+
+        if (lunchAlerts.length > 0 && alertBox && alertMsg) {
+          let html = `🚨 <strong>Alerte Déjeuner :</strong><ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
+
+          lunchAlerts.forEach(item => {
+            const sector = getSectorForRoom(item.room);
+            const key = item.room + '_' + item.pauseType;
+            const isDoneLocally = localRelays[key] === true;
+
+            let statusText = "";
+            if (item.status === "Non effectuée") {
+              statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) n'a pas déjeuné`;
+            } else {
+              statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais`;
             }
-          </li>`;
-      });
 
-      html += `</ul>`;
-      alertMsg.innerHTML = html;
-      alertBox.style.display = 'block';
-    } else if (alertBox) {
-      alertBox.style.display = 'none';
+            html += `
+              <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <span>• ${statusText}</span>
+                ${
+                  isDoneLocally 
+                  ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
+                  : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
+                             style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
+                        Remplacement effectué 👍
+                     </button>`
+                }
+              </li>`;
+          });
+
+          html += `</ul>`;
+          alertMsg.innerHTML = html;
+          alertBox.style.display = 'block';
+        } else if (alertBox) {
+          alertBox.style.display = 'none';
+        }
+      } else {
+        if (alertBox) alertBox.style.display = 'none';
+      }
     }
-  } else {
-    if (alertBox) alertBox.style.display = 'none';
-  }
-}
     
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
@@ -428,9 +444,9 @@
           tdRoom.innerText = room;
           tr.appendChild(tdRoom);
 
-          ['Café matin', 'Déjeuner', 'Café après-midi', 'Relais Plein'].forEach(p => {
+          ['Café', 'Repas', 'CaféPM', 'Plein'].forEach(p => {
             const td = document.createElement('td');
-            td.id = 'cell-' + room + '-' + p.replace(/\s+/g, '');
+            td.id = 'cell-' + room + '-' + p;
             td.innerText = '-';
             tr.appendChild(td);
           });
@@ -440,37 +456,37 @@
       });
     }
 
-  function updateSynthBadge(room, pauseType, status) {
-  let cleanType = pauseType;
-  if (pauseType === 'Café' || pauseType === 'Café matin') cleanType = 'Café';
-  else if (pauseType === 'Repas' || pauseType === 'Déjeuner') cleanType = 'Repas';
-  else if (pauseType === 'Café PM' || pauseType === 'Café après-midi') cleanType = 'CaféPM';
-  else if (pauseType === 'Plein' || pauseType === 'Relais Plein') cleanType = 'Plein';
+    function updateSynthBadge(room, pauseType, status) {
+      let cleanType = pauseType;
+      if (pauseType === 'Café' || pauseType === 'Café matin') cleanType = 'Café';
+      else if (pauseType === 'Repas' || pauseType === 'Déjeuner') cleanType = 'Repas';
+      else if (pauseType === 'Café PM' || pauseType === 'Café après-midi') cleanType = 'CaféPM';
+      else if (pauseType === 'Plein' || pauseType === 'Relais Plein') cleanType = 'Plein';
 
-  const cellId = 'cell-' + room + '-' + cleanType;
-  const cell = document.getElementById(cellId);
-  if (!cell) return;
+      const cellId = 'cell-' + room + '-' + cleanType;
+      const cell = document.getElementById(cellId);
+      if (!cell) return;
 
-  const localRelays = getLocalRelays();
-  const key = room + '_' + pauseType;
-  const isDoneLocally = localRelays[key] === true;
+      const localRelays = getLocalRelays();
+      const key = room + '_' + pauseType;
+      const isDoneLocally = localRelays[key] === true;
 
-  let badgeHTML = '-';
-  
-  if (isDoneLocally) {
-    badgeHTML = '<span class="badge bg-green">👍</span>';
-  } else if (status === 'Effectuée') {
-    badgeHTML = '<span class="badge bg-green">V</span>';
-  } else if (status === "Pause prévue avec l'équipe" || status === "Pause prévue") {
-    badgeHTML = '<span class="badge bg-blue">P</span>';
-  } else if (status === "Besoin d'un relais" || status === "Besoin relais") {
-    badgeHTML = '<span class="badge bg-orange">B</span>';
-  } else if (status === 'Non effectuée') {
-    badgeHTML = '<span class="badge bg-red">X</span>';
-  }
+      let badgeHTML = '-';
+      
+      if (isDoneLocally) {
+        badgeHTML = '<span class="badge bg-green">👍</span>';
+      } else if (status === 'Effectuée') {
+        badgeHTML = '<span class="badge bg-green">V</span>';
+      } else if (status === "Pause prévue avec l'équipe" || status === "Pause prévue") {
+        badgeHTML = '<span class="badge bg-blue">P</span>';
+      } else if (status === "Besoin d'un relais" || status === "Besoin relais") {
+        badgeHTML = '<span class="badge bg-orange">B</span>';
+      } else if (status === 'Non effectuée') {
+        badgeHTML = '<span class="badge bg-red">X</span>';
+      }
 
-  cell.innerHTML = badgeHTML;
-}
+      cell.innerHTML = badgeHTML;
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
       checkAuthOnLoad();
