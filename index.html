@@ -249,10 +249,21 @@
 
     function resolveAlertLocally(room, pauseType) {
       const localRelays = getLocalRelays();
-      const key = room + '_' + pauseType;
+      const key = room + '_' + normalizePauseType(pauseType);
       localRelays[key] = true;
       localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
       fetchSavedData();
+    }
+
+    // Normalise toutes les variations de noms de pauses pour assurer la correspondance
+    function normalizePauseType(type) {
+      if (!type) return '';
+      const t = type.toString().toLowerCase().trim();
+      if (t.includes('café après-midi') || t.includes('café pm') || t.includes('cafepm')) return 'Café après-midi';
+      if (t.includes('café matin') || t.includes('café')) return 'Café matin';
+      if (t.includes('déjeuner') || t.includes('repas')) return 'Déjeuner';
+      if (t.includes('plein')) return 'Relais Plein';
+      return type;
     }
 
     function switchTab(tabId) {
@@ -393,22 +404,24 @@
 
       if (currentTimeInMinutes >= morningStart && currentTimeInMinutes <= morningEnd) {
         alertTitle = "☕ Alerte Café Matin :";
-        activeAlerts = data.filter(item => 
-          (item.pauseType === "Café" || item.pauseType === "Café matin" || item.pauseType === "Café Matin") && needsRelay(item.status)
-        );
+        activeAlerts = data.filter(item => {
+          const norm = normalizePauseType(item.pauseType);
+          return norm === "Café matin" && needsRelay(item.status);
+        });
       }
       else if (currentTimeInMinutes >= lunchStart && currentTimeInMinutes <= lunchEnd) {
         alertTitle = "🚨 Alerte Déjeuner :";
-        activeAlerts = data.filter(item => 
-          (item.pauseType === "Déjeuner" || item.pauseType === "Repas") && needsRelay(item.status)
-        );
+        activeAlerts = data.filter(item => {
+          const norm = normalizePauseType(item.pauseType);
+          return norm === "Déjeuner" && needsRelay(item.status);
+        });
       }
       else if (currentTimeInMinutes >= afternoonStart && currentTimeInMinutes <= afternoonEnd) {
-        alertTitle = "☕🛒 Alerte Après-Midi :";
-        activeAlerts = data.filter(item => 
-          (item.pauseType === "Café PM" || item.pauseType === "Café après-midi" || item.pauseType === "Plein" || item.pauseType === "Relais Plein") && 
-          needsRelay(item.status)
-        );
+        alertTitle = "☕🛒 Alertes Après-Midi :";
+        activeAlerts = data.filter(item => {
+          const norm = normalizePauseType(item.pauseType);
+          return (norm === "Café après-midi" || norm === "Relais Plein") && needsRelay(item.status);
+        });
       }
 
       if (activeAlerts.length > 0 && alertBox && alertMsg) {
@@ -417,14 +430,15 @@
 
         activeAlerts.forEach(item => {
           const sector = getSectorForRoom(item.room);
-          const key = item.room + '_' + item.pauseType;
+          const normPause = normalizePauseType(item.pauseType);
+          const key = item.room + '_' + normPause;
           const isDoneLocally = localRelays[key] === true;
 
           let statusText = "";
           if (item.status && item.status.toString().toLowerCase().includes("non")) {
-            statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) n'a pas eu sa pause <em>${item.pauseType}</em>`;
+            statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) n'a pas eu : <em>${normPause}</em>`;
           } else {
-            statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais (${item.pauseType})`;
+            statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais : <em>${normPause}</em>`;
           }
 
           html += `
@@ -433,7 +447,7 @@
               ${
                 isDoneLocally 
                 ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
-                : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
+                : `<button onclick="resolveAlertLocally('${item.room}', '${normPause}')" 
                            style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
                       Remplacement à effectuer 👍
                    </button>`
@@ -484,18 +498,20 @@
     }
 
     function updateSynthBadge(room, pauseType, status) {
-      let cleanType = pauseType;
-      if (pauseType === 'Café' || pauseType === 'Café matin') cleanType = 'Café';
-      else if (pauseType === 'Repas' || pauseType === 'Déjeuner') cleanType = 'Repas';
-      else if (pauseType === 'Café PM' || pauseType === 'Café après-midi') cleanType = 'CaféPM';
-      else if (pauseType === 'Plein' || pauseType === 'Relais Plein') cleanType = 'Plein';
+      const normType = normalizePauseType(pauseType);
+      let cleanType = '';
+
+      if (normType === 'Café matin') cleanType = 'Café';
+      else if (normType === 'Déjeuner') cleanType = 'Repas';
+      else if (normType === 'Café après-midi') cleanType = 'CaféPM';
+      else if (normType === 'Relais Plein') cleanType = 'Plein';
 
       const cellId = 'cell-' + room + '-' + cleanType;
       const cell = document.getElementById(cellId);
       if (!cell) return;
 
       const localRelays = getLocalRelays();
-      const key = room + '_' + pauseType;
+      const key = room + '_' + normType;
       const isDoneLocally = localRelays[key] === true;
 
       let badgeHTML = '-';
