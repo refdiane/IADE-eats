@@ -489,15 +489,28 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-      checkAuthOnLoad();
-      renderSectors();
-      renderSynthTable();
-      fetchSavedData();
-      
-      const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      const tsDisplay = document.getElementById('timestamp-display');
-      if (tsDisplay) tsDisplay.innerText = 'Date du jour : ' + today;
-    });
+  // 1. Vérification de l'authentification (ID / Mot de passe)
+  if (typeof checkAuthOnLoad === 'function') {
+    checkAuthOnLoad();
+  }
+
+  // 2. Initialisation des grilles et tableaux
+  if (typeof renderSectors === 'function') renderSectors();
+  if (typeof renderSynthTable === 'function') renderSynthTable();
+
+  // 3. Premier chargement des données depuis Google Sheets
+  fetchSavedData();
+
+  // 4. Synchronization automatique toutes les 10 secondes (évite le lag entre PC/téléphones)
+  setInterval(fetchSavedData, 10000);
+
+  // 5. Affichage de la date du jour
+  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const tsDisplay = document.getElementById('timestamp-display');
+  if (tsDisplay) {
+    tsDisplay.innerText = 'Date du jour : ' + today;
+  }
+});
   </script>
 </body>
 </html>
