@@ -250,14 +250,15 @@
 
       const rempPauseType = "Remp " + cleanPause;
 
-      const formData = new FormData();
-      formData.append('room', room);
-      formData.append('pauseType', rempPauseType);
-      formData.append('status', newStatus);
+      const payload = new URLSearchParams();
+      payload.append('room', room);
+      payload.append('pauseType', rempPauseType);
+      payload.append('status', newStatus);
 
       fetch(SCRIPT_URL, {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: payload
       })
       .then(() => {
         document.getElementById('sync-status').innerText = "🟢 Enregistré !";
@@ -387,14 +388,15 @@
 
       document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
 
-      const formData = new FormData();
-      formData.append('room', selectedRoom);
-      formData.append('pauseType', pauseType);
-      formData.append('status', statusValue);
+      const payload = new URLSearchParams();
+      payload.append('room', selectedRoom);
+      payload.append('pauseType', pauseType);
+      payload.append('status', statusValue);
 
       fetch(SCRIPT_URL, {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: payload
       })
       .then(() => {
         document.getElementById('sync-status').innerText = "🟢 Enregistré !";
@@ -482,7 +484,7 @@
 
           let actionButtonsHTML = "";
 
-          if (rempStatus.includes("relais effectué") || rempStatus.includes("effectue")) {
+          if (rempStatus.includes("relais") || rempStatus.includes("effectu") || rempStatus.includes("👍")) {
             actionButtonsHTML = `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`;
           } 
           else {
@@ -554,27 +556,34 @@
       let badgeHTML = '-';
       const st = status ? status.toString().toLowerCase() : '';
 
+      // Recherche d'un éventuel remplacement saisi pour la pause concernée
       let rempStatus = "";
       if (allData) {
-        const rempMatch = allData.find(r => r.room === room && normalizePauseType(r.pauseType) === cleanType && r.pauseType.startsWith("Remp "));
+        const rempMatch = allData.find(r => 
+          r.room === room && 
+          normalizePauseType(r.pauseType) === cleanType && 
+          r.pauseType.toString().toLowerCase().includes("remp")
+        );
         if (rempMatch && rempMatch.status) {
           rempStatus = rempMatch.status.toString().toLowerCase();
         }
       }
 
-      if (st.includes('effectu') && !st.includes('non')) {
+      // Priorité 1 : Le relais a été validé par un collègue
+      if (rempStatus.includes("relais") || rempStatus.includes("effectu") || rempStatus.includes("👍")) {
+        badgeHTML = '<span class="badge bg-green" title="Relais effectué">👍</span>';
+      }
+      // Priorité 2 : Pause demandée par l'IADE de la salle
+      else if (st.includes('besoin') || st.includes('relais') || st.includes('non')) {
+        badgeHTML = '<span class="badge bg-orange" title="Remplacement à effectuer">⏳</span>';
+      } 
+      // Priorité 3 : Pause effectuée par l'IADE de la salle directement
+      else if (st.includes('effectu')) {
         badgeHTML = '<span class="badge bg-green">V</span>';
-      } else if (st.includes('prévu') || st.includes('prevu')) {
+      } 
+      // Priorité 4 : Pause prévue
+      else if (st.includes('prévu') || st.includes('prevu')) {
         badgeHTML = '<span class="badge bg-blue">P</span>';
-      } else if (st.includes('besoin') || st.includes('relais') || st.includes('non')) {
-        // Validation effectuée par un collègue -> Badge vert avec pouce levé 👍
-        if (rempStatus.includes("relais effectué") || rempStatus.includes("effectue")) {
-          badgeHTML = '<span class="badge bg-green" title="Relais effectué">👍</span>';
-        }
-        // Demande de remplacement en attente -> Badge orange avec sablier ⏳
-        else {
-          badgeHTML = '<span class="badge bg-orange" title="Remplacement à effectuer">⏳</span>';
-        }
       }
 
       cell.innerHTML = badgeHTML;
