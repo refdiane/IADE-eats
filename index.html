@@ -329,27 +329,34 @@
     }
 
     function updateStatus(pauseType, statusValue, btn) {
-      if (!selectedRoom) return;
+  if (!selectedRoom) return;
 
-      const parentRow = btn.closest('.pause-row');
-      parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  const parentRow = btn.closest('.pause-row');
+  parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 
-      document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
+  document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
 
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ room: selectedRoom, pauseType: pauseType, status: statusValue })
-      }).then(() => {
-        document.getElementById('sync-status').innerText = "🟢 Enregistré !";
-        updateSynthBadge(selectedRoom, pauseType, statusValue);
-        fetchSavedData();
-      }).catch(() => {
-        document.getElementById('sync-status').innerText = "🔴 Erreur";
-      });
-    }
+  // Utilisation de FormData pour Apps Script
+  const formData = new FormData();
+  formData.append('room', selectedRoom);
+  formData.append('pauseType', pauseType);
+  formData.append('status', statusValue);
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: formData
+  })
+  .then(() => {
+    document.getElementById('sync-status').innerText = "🟢 Enregistré !";
+    updateSynthBadge(selectedRoom, pauseType, statusValue);
+    fetchSavedData();
+  })
+  .catch(err => {
+    console.error("Erreur enregistrement :", err);
+    document.getElementById('sync-status').innerText = "🔴 Erreur";
+  });
+}
 
     function checkPendingAlerts(data) {
   const now = new Date();
