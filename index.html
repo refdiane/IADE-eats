@@ -171,6 +171,7 @@
     <div class="legend-box">
       <div class="legend-item"><span class="badge bg-green">V</span> Effectuée</div>
       <div class="legend-item"><span class="badge bg-blue">P</span> Pause prévue</div>
+      <div class="legend-item"><span class="badge bg-orange">👍</span> Remplacement prévu</div>
       <div class="legend-item"><span class="badge bg-orange">B</span> Besoin relais</div>
       <div class="legend-item"><span class="badge bg-red">X</span> Non effectuée</div>
     </div>
@@ -270,7 +271,7 @@
       });
     }
 
-    // Normalisation robuste des libellés de pause
+    // Normalisation des libellés
     function normalizePauseType(type) {
       if (!type) return '';
       
@@ -324,7 +325,8 @@
 
           itemsList.forEach(item => {
             if (item.status && !item.pauseType.startsWith("Remp ")) {
-              updateSynthBadge(item.room, item.pauseType, item.status);
+              // On passe toute la liste pour que la cellule puisse vérifier s'il y a un statut Remplacement associé
+              updateSynthBadge(item.room, item.pauseType, item.status, itemsList);
             }
           });
 
@@ -400,7 +402,6 @@
       })
       .then(() => {
         document.getElementById('sync-status').innerText = "🟢 Enregistré !";
-        updateSynthBadge(selectedRoom, pauseType, statusValue);
         fetchSavedData();
       })
       .catch(err => {
@@ -473,9 +474,9 @@
           const sector = getSectorForRoom(item.room);
           const normPause = normalizePauseType(item.pauseType);
 
-          // Vérification si un remplacement a été noté dans le Sheet
+          // Recherche d'un éventuel enregistrement de Remplacement
           const rempMatch = data.find(r => r.room === item.room && normalizePauseType(r.pauseType) === normPause && r.pauseType.startsWith("Remp "));
-          const rempStatus = rempMatch ? rempMatch.status : "";
+          const rempStatus = rempMatch ? rempMatch.status.toLowerCase() : "";
 
           let statusText = "";
           if (item.status && item.status.toString().toLowerCase().includes("non")) {
@@ -485,29 +486,23 @@
           }
 
           let actionButtonsHTML = "";
-          if (rempStatus === "remplacement à effectuer 👍") {
-            actionButtonsHTML = `
-              <span style="color: #d97706; font-weight: bold; font-size: 0.85rem; margin-right: 5px;">Remplacement à effectuer 👍</span>
-              <button onclick="sendRemplacementToSheet('${item.room}', '${normPause}', 'relais effectué 👍')" 
-                     style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
-                Valider relais effectué 👍
-              </button>`;
-          } else if (rempStatus === "relais effectué 👍") {
+
+          // Si un collègue a déjà validé que le relais a été effectué
+          if (rempStatus.includes("relais effectué") || rempStatus.includes("effectue")) {
             actionButtonsHTML = `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`;
-          } else {
+          } 
+          // Par défaut ou si "remplacement à effectuer", on affiche la mention et le bouton pour valider que le relais est fait
+          else {
             actionButtonsHTML = `
-              <button onclick="sendRemplacementToSheet('${item.room}', '${normPause}', 'remplacement à effectuer 👍')" 
-                     style="background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem; margin-right: 4px;">
-                Remplacement à effectuer 👍
-              </button>
+              <span style="color: #d97706; font-weight: bold; font-size: 0.85rem; margin-right: 8px;">Remplacement à effectuer ⏳</span>
               <button onclick="sendRemplacementToSheet('${item.room}', '${normPause}', 'relais effectué 👍')" 
-                     style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
-                Relais effectué 👍
+                     style="background: #10b981; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
+                Valider relais effectué 👍
               </button>`;
           }
 
           html += `
-            <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <li style="margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px;">
               <span>• ${statusText}</span>
               <div>${actionButtonsHTML}</div>
             </li>`;
@@ -555,7 +550,7 @@
       });
     }
 
-    function updateSynthBadge(room, pauseType, status) {
+    function updateSynthBadge(room, pauseType, status, allData) {
       const cleanType = normalizePauseType(pauseType);
       if (!cleanType) return;
 
@@ -566,14 +561,28 @@
       let badgeHTML = '-';
       const st = status ? status.toString().toLowerCase() : '';
 
+      // Vérifier si un remplacement est programmé/en cours dans les données globales
+      let rempStatus = "";
+      if (allData) {
+        const rempMatch = allData.find(r => r.room === room && normalizePauseType(r.pauseType) === cleanType && r.pauseType.startsWith("Remp "));
+        if (rempMatch && rempMatch.status) {
+          rempStatus = rempMatch.status.toLowerCase();
+        }
+      }
+
       if (st.includes('effectu') && !st.includes('non')) {
         badgeHTML = '<span class="badge bg-green">V</span>';
       } else if (st.includes('prévu') || st.includes('prevu')) {
         badgeHTML = '<span class="badge bg-blue">P</span>';
-      } else if (st.includes('besoin') || st.includes('relais')) {
-        badgeHTML = '<span class="badge bg-orange">B</span>';
-      } else if (st.includes('non')) {
-        badgeHTML = '<span class="badge bg-red">X</span>';
+      } else if (st.includes('besoin') || st.includes('relais') || st.includes('non')) {
+        // Si le relais a été validé comme effectué
+        if (rempStatus.includes("relais effectué") || rempStatus.includes("effectue")) {
+          badgeHTML = '<span class="badge bg-green">V</span>';
+        }
+        // Si un remplacement est prévu/en cours (par défaut dès qu'un besoin est émis)
+        else {
+          badgeHTML = '<span class="badge bg-orange" title="Remplacement à effectuer">👍</span>';
+        }
       }
 
       cell.innerHTML = badgeHTML;
@@ -589,7 +598,7 @@
 
       fetchSavedData();
 
-      // Polling toutes les 10 secondes pour synchroniser tous les écrans
+      // Polling toutes les 10 secondes
       setInterval(fetchSavedData, 10000);
 
       const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
