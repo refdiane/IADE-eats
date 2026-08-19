@@ -3,587 +3,182 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IADE Eats</title>
+  <title>IADE eat's ?</title>
   <style>
-    :root {
-      --primary-color: #00b074;
-      --bg-color: #f4f6f8;
-      --card-bg: #ffffff;
-      --text-color: #2c3e50;
-      --color-green: #2ecc71;
-      --color-orange: #f39c12;
-      --color-red: #e74c3c;
-      --color-blue: #3498db;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 70px; }
-
-    header { background-color: var(--primary-color); color: white; padding: 15px; text-align: center; }
-    header h1 { font-size: 1.8rem; }
-    header p { font-size: 0.85rem; margin-top: 4px; opacity: 0.9; }
-
-    nav.tabs { display: flex; background: #fff; border-bottom: 2px solid #ddd; }
-    .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-size: 1rem; font-weight: bold; color: #7f8c8d; cursor: pointer; border-bottom: 3px solid transparent; }
-    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
-
-    .tab-content { display: none; padding: 15px; max-width: 900px; margin: 0 auto; }
-    .tab-content.active { display: block; }
-
-    .step-box { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .step-title { font-size: 1rem; font-weight: bold; margin-bottom: 12px; text-align: center; background: #eef2f5; padding: 8px; border-radius: 6px; }
-
-    .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-    .btn-option { padding: 12px 8px; border: 2px solid #ddd; border-radius: 8px; background: #fff; font-size: 0.9rem; font-weight: bold; cursor: pointer; text-align: center; }
-    .btn-option.selected { border-color: var(--primary-color); background-color: #e8f8f5; color: var(--primary-color); }
-
-    .pause-row { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ddd; }
-    .pause-label { font-weight: bold; margin-bottom: 8px; }
-    .status-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn-status { flex: 1; min-width: 80px; padding: 10px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 0.8rem; cursor: pointer; opacity: 0.4; }
-    .btn-status.active { opacity: 1; transform: scale(1.02); }
-
-    .bg-green { background-color: var(--color-green); }
-    .bg-orange { background-color: var(--color-orange); }
-    .bg-red { background-color: var(--color-red); }
-    .bg-blue { background-color: var(--color-blue); }
-
-    .timestamp-box { text-align: right; font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px; }
-    .legend-box { display: flex; justify-content: space-around; background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 15px; flex-wrap: wrap; gap: 8px; }
-    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: bold; }
-    .badge { width: 22px; height: 22px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
-
-    table.synth-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
-    table.synth-table th, table.synth-table td { padding: 8px 5px; text-align: center; border: 1px solid #eee; font-size: 0.85rem; }
-    table.synth-table th { background: #34495e; color: white; }
-    td.sector-cell { font-weight: bold; background: #f8f9fa; text-align: left; }
-
-    #sync-status { position: fixed; bottom: 15px; right: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; }
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; }
+    h1 { text-align: center; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    th { background-color: #2c3e50; color: white; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px; }
+    .badge { padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 12px; color: white; display: inline-block; }
+    .badge-besoin { background-color: #e67e22; }
+    .badge-effectue { background-color: #27ae60; }
+    .badge-pause { background-color: #17a2b8; }
   </style>
 </head>
 <body>
 
-  <!-- Modal de connexion -->
-  <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999;">
-    <div style="background: white; padding: 30px; border-radius: 12px; max-width: 350px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-      <h2 style="margin-top: 0; color: #1e293b;">Connexion IADE Eats</h2>
-      <p style="color: #64748b; font-size: 0.9rem;">Veuillez saisir vos identifiants pour accéder à l'application.</p>
-      
-      <form id="login-form" onsubmit="handleLogin(event)">
-        <div style="margin-bottom: 15px; text-align: left;">
-          <label style="font-size: 0.85rem; font-weight: bold; color: #334155;">Identifiant</label>
-          <input type="text" id="auth-id" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
-        </div>
-        
-        <div style="margin-bottom: 15px; text-align: left;">
-          <label style="font-size: 0.85rem; font-weight: bold; color: #334155;">Mot de passe</label>
-          <input type="password" id="auth-pass" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
-        </div>
+  <h1>IADE eat's ?</h1>
 
-        <div style="margin-bottom: 20px; text-align: left; display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" id="remember-me" style="width: 16px; height: 16px;">
-          <label for="remember-me" style="font-size: 0.85rem; color: #475569; cursor: pointer;">Se souvenir de moi</label>
-        </div>
-
-        <p id="login-error" style="color: #dc2626; font-size: 0.85rem; display: none; margin-bottom: 15px;">Identifiant ou mot de passe incorrect.</p>
-
-        <button type="submit" style="width: 100%; background: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Se connecter</button>
-      </form>
-    </div>
-  </div>
-  
-  <header style="display: flex; align-items: center; padding: 12px 20px; gap: 15px;">
-    <img src="https://i.ibb.co/SX6jDtYm/logo.png" alt="Logo IADE Eats" style="height: 4cm; width: 4cm; border-radius: 8px; object-fit: cover;">
-    <div>
-      <h1 style="font-size: 1.5rem; text-align: left; margin: 0;">IADE Eats</h1>
-      <p style="font-size: 0.8rem; margin: 0; text-align: left;">Suivi des différents niveaux (stomacal, vésical, caféïnique, nicotinique...) IADEsque en temps réel. Anonymat voulu et assumé</p>
-    </div>
-  </header>
-
-  <!-- Bannière d'alerte Push -->
-  <div id="push-alert" style="display: none; background-color: #fee2e2; border-left: 5px solid #ef4444; color: #991b1b; padding: 15px; margin: 15px auto; max-width: 900px; border-radius: 8px; font-weight: normal; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-    <span id="push-alert-message"></span>
-  </div>
-
-  <nav class="tabs">
-    <button class="tab-btn active" id="btn-tab1" onclick="switchTab('tab1')">Au menu ce jour 🍽️</button>
-    <button class="tab-btn" id="btn-tab2" onclick="switchTab('tab2')">Note du jour 📝</button>
-  </nav>
-
-  <!-- ONGLET 1 -->
-  <div id="tab1" class="tab-content active">
-    <div class="step-box">
-      <div class="step-title">1. Sélectionnez votre secteur</div>
-      <div class="grid-buttons" id="sectors-grid"></div>
-    </div>
-
-    <div class="step-box" id="rooms-box" style="display: none;">
-      <div class="step-title">2. Sélectionnez votre salle</div>
-      <div class="grid-buttons" id="rooms-grid"></div>
-    </div>
-
-    <div class="step-box" id="actions-box" style="display: none;">
-      <div class="step-title" id="selected-room-title">3. Statut des relais</div>
-      
-      <div class="pause-row">
-        <div class="pause-label">Café matin ☕</div>
-        <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Café matin', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Café matin', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Café matin', 'Non effectuée', this)">Non effectuée</button>
-        </div>
-      </div>
-
-      <div class="pause-row">
-        <div class="pause-label">Déjeuner 🍽️</div>
-        <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Déjeuner', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-blue" onclick="updateStatus('Déjeuner', 'Pause prévue avec l\'équipe', this)">Pause prévue</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Déjeuner', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Déjeuner', 'Non effectuée', this)">Non effectuée</button>
-        </div>
-      </div>
-
-      <div class="pause-row">
-        <div class="pause-label">Café après-midi ☕</div>
-        <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Café après-midi', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Café après-midi', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Café après-midi', 'Non effectuée', this)">Non effectuée</button>
-        </div>
-      </div>
-
-      <div class="pause-row">
-        <div class="pause-label">Relais Plein 🛒</div>
-        <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Relais Plein', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Relais Plein', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Relais Plein', 'Non effectuée', this)">Non effectuée</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ONGLET 2 -->
-  <div id="tab2" class="tab-content">
-    <div class="timestamp-box" id="timestamp-display"></div>
-
-    <div class="legend-box">
-      <div class="legend-item"><span class="badge bg-green">V</span> Effectuée</div>
-      <div class="legend-item"><span class="badge bg-blue">P</span> Pause prévue</div>
-      <div class="legend-item"><span class="badge bg-orange">B</span> Besoin relais</div>
-      <div class="legend-item"><span class="badge bg-red">X</span> Non effectuée</div>
-    </div>
-
-    <table class="synth-table">
-      <thead>
-        <tr>
-          <th>Secteur</th>
-          <th>Salle</th>
-          <th>Café ☕</th>
-          <th>Repas 🍽️</th>
-          <th>Café PM ☕</th>
-          <th>Plein 🛒</th>
-        </tr>
-      </thead>
-      <tbody id="synth-tbody"></tbody>
-    </table>
-  </div>
-
-  <div id="sync-status">🟢 Prêt</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Secteurs</th>
+        <th>Salles</th>
+        <th>Café matin ☕</th>
+        <th>Remp. Café</th>
+        <th>Déjeuner 🥪</th>
+        <th>Remp. Déj</th>
+        <th>Café PM ☕</th>
+        <th>Remp. PM</th>
+        <th>Relais Plein 🛒</th>
+        <th>Remp. Plein</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      <!-- Les lignes sont générées dynamiquement -->
+    </tbody>
+  </table>
 
   <script>
-    const VALID_ID = "CHUnice";
-    const VALID_PASS = "2974";
+    // URL DE TON DEPLOIEMENT GOOGLE APPS SCRIPT
+    const API_URL = "TON_URL_APP_SCRIPT_ICI";
 
-    function checkAuthOnLoad() {
-      const savedAuth = localStorage.getItem("iade_eats_auth");
-      if (savedAuth === "true") {
-        document.getElementById("login-overlay").style.display = "none";
-      }
-    }
-
-    function handleLogin(event) {
-      event.preventDefault();
-      const inputId = document.getElementById("auth-id").value;
-      const inputPass = document.getElementById("auth-pass").value;
-      const remember = document.getElementById("remember-me").checked;
-      const errorMsg = document.getElementById("login-error");
-
-      if (inputId === VALID_ID && inputPass === VALID_PASS) {
-        if (remember) {
-          localStorage.setItem("iade_eats_auth", "true");
-        }
-        document.getElementById("login-overlay").style.display = "none";
-      } else {
-        errorMsg.style.display = "block";
-      }
-    }    
-    
-    const MAPPING = [
-      { sector: "Urgences 🚨", rooms: ["S1", "S2"] },
-      { sector: "Neurochir 🧠", rooms: ["S3", "S4", "S5"] },
-      { sector: "Ophtalmo 👁️", rooms: ["S6", "S7"] },
-      { sector: "Uro 🚽", rooms: ["S8", "S9", "S20"] },
-      { sector: "Traumato 🔨", rooms: ["S10", "S15"] },
-      { sector: "Ortho 🦴", rooms: ["S11", "S12", "S13", "S14"] },
-      { sector: "Rép 👄", rooms: ["S17", "S18", "S19"] },
-      { sector: "Cardio 🫀", rooms: ["S21", "S22"] },
-      { sector: "Vasculaire 🩸", rooms: ["S23", "S24", "S25"] },
-      { sector: "Thorax 🫁", rooms: ["S26", "S27", "S28"] },
-      { sector: "SSPI Nord-Nord 🏥", rooms: ["SSPI Nord-Nord"] },
-      { sector: "NRI ☢️", rooms: ["SBiplan", "SMonoplan", "STDM"] }
+    // Liste des salles
+    const rooms = [
+      { sector: "Urgences 🚨", room: "S1" },
+      { sector: "Urgences 🚨", room: "S2" },
+      { sector: "Neurochir 🧠", room: "S3" },
+      { sector: "Neurochir 🧠", room: "S4" },
+      { sector: "Neurochir 🧠", room: "S5" },
+      { sector: "Ophtalmo 👁️", room: "S6" },
+      { sector: "Ophtalmo 👁️", room: "S7" },
+      { sector: "Uro 🚽", room: "S8" },
+      { sector: "Uro 🚽", room: "S9" },
+      { sector: "Traumato 🔨", room: "S10" },
+      { sector: "Ortho 🦴", room: "S11" },
+      { sector: "Ortho 🦴", room: "S12" },
+      { sector: "Ortho 🦴", room: "S13" },
+      { sector: "Ortho 🦴", room: "S14" },
+      { sector: "Traumato 🔨", room: "S15" },
+      { sector: "Rép 🥩", room: "S17" },
+      { sector: "Rép 🥩", room: "S18" },
+      { sector: "Rép 🥩", room: "S19" },
+      { sector: "Uro 🚽", room: "S20" },
+      { sector: "Cardio 🫀", room: "S21" },
+      { sector: "Cardio 🫀", room: "S22" },
+      { sector: "Vasculaire 🩸", room: "S23" },
+      { sector: "Vasculaire 🩸", room: "S24" },
+      { sector: "Vasculaire 🩸", room: "S25" },
+      { sector: "Thorax 🫁", room: "S26" },
+      { sector: "Thorax 🫁", room: "S27" },
+      { sector: "Thorax 🫁", room: "S28" },
+      { sector: "SSPI Nord-Nord 🏥", room: "SSPI Nord-Nord" },
+      { sector: "NRI ☣️", room: "SBiplan" },
+      { sector: "NRI ☣️", room: "SMonoplan" },
+      { sector: "NRI ☣️", room: "STDM" }
     ];
 
-    let selectedSector = null;
-    let selectedRoom = null;
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydPsjeyRnt4QhvHvj34z-P2IY3TXABlCemVGSPudkmQktQKJrDxqbMdJTJ6JqaXn4SiA/exec";
+    const pauseTypes = ["Café matin", "Déjeuner", "Café PM", "Relais Plein"];
 
-    function getLocalRelays() {
+    // Options du menu déroulant des remplacements
+    const rempOptions = ["", "remplacement à effectuer 👍", "relais effectué 👍"];
+
+    function initTable() {
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+
+      rooms.forEach(item => {
+        const tr = document.createElement("tr");
+
+        // Secteur & Salle
+        tr.innerHTML = `<td>${item.sector}</td><td><strong>${item.room}</strong></td>`;
+
+        // Génération des colonnes de Pause + Remplacement
+        pauseTypes.forEach(pType => {
+          // Colonne Statut Pause
+          const pauseCellId = `status-${item.room}-${pType.replace(/\s+/g, '')}`;
+          tr.innerHTML += `<td id="${pauseCellId}">-</td>`;
+
+          // Colonne Menu Déroulant Remplacement
+          const rempSelectId = `remp-${item.room}-${pType.replace(/\s+/g, '')}`;
+          let selectHTML = `<select id="${rempSelectId}" onchange="updateRemplacement('${item.room}', '${pType}', this.value)">`;
+          rempOptions.forEach(opt => {
+            selectHTML += `<option value="${opt}">${opt}</option>`;
+          });
+          selectHTML += `</select>`;
+
+          tr.innerHTML += `<td>${selectHTML}</td>`;
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Récupère les données de Google Sheets
+    async function loadData() {
       try {
-        return JSON.parse(localStorage.getItem('iade_eats_local_relays') || '{}');
-      } catch(e) {
-        return {};
-      }
-    }
+        const response = await fetch(API_URL);
+        const data = await response.json();
 
-    function resolveAlertLocally(room, pauseType) {
-      const localRelays = getLocalRelays();
-      const cleanType = normalizePauseType(pauseType);
-      const key = room + '_' + cleanType;
-      localRelays[key] = true;
-      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
-      fetchSavedData();
-    }
+        data.forEach(entry => {
+          if (!entry.room || !entry.pauseType) return;
 
-    // Normalisation robuste pour traiter les émojis, espaces insécables et variations de texte
-    function normalizePauseType(type) {
-      if (!type) return '';
-      
-      const cleanStr = type.toString()
-        .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
-        .trim()
-        .toLowerCase();
+          const cleanType = entry.pauseType.replace("Remp ", "").replace(/\s+/g, '');
 
-      if (cleanStr.includes('après-midi') || cleanStr.includes('apres-midi') || cleanStr.includes('pm')) {
-        return 'CaféPM';
-      }
-      if (cleanStr.includes('matin') || cleanStr.includes('café') || cleanStr.includes('cafe')) {
-        return 'Café';
-      }
-      if (cleanStr.includes('déjeuner') || cleanStr.includes('dejeuner') || cleanStr.includes('repas')) {
-        return 'Repas';
-      }
-      if (cleanStr.includes('plein') || cleanStr.includes('relais')) {
-        return 'Plein';
-      }
-
-      return cleanStr;
-    }
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      
-      if (tabId === 'tab1') document.getElementById('btn-tab1').classList.add('active');
-      if (tabId === 'tab2') {
-        document.getElementById('btn-tab2').classList.add('active');
-        fetchSavedData();
-      }
-      
-      document.getElementById(tabId).classList.add('active');
-    }
-
-    function fetchSavedData() {
-      fetch(SCRIPT_URL)
-        .then(response => response.json())
-        .then(data => {
-          let itemsList = [];
-
-          if (Array.isArray(data)) {
-            data.forEach(row => {
-              if (row.room && row.pauseType) {
-                itemsList.push(row);
-              } else if (row["Salles d'opération"]) {
-                const room = row["Salles d'opération"];
-                Object.keys(row).forEach(key => {
-                  if (key !== "Secteurs" && key !== "Salles d'opération" && key !== "Date du jour") {
-                    itemsList.push({
-                      room: room,
-                      pauseType: key,
-                      status: row[key]
-                    });
-                  }
-                });
-              }
-            });
-          }
-
-          itemsList.forEach(item => {
-            if (item.status) {
-              updateSynthBadge(item.room, item.pauseType, item.status);
+          if (entry.pauseType.startsWith("Remp ")) {
+            // Mise à jour du menu déroulant de remplacement
+            const selectEl = document.getElementById(`remp-${entry.room}-${cleanType}`);
+            if (selectEl && selectEl.value !== entry.status) {
+              selectEl.value = entry.status;
             }
-          });
-
-          checkPendingAlerts(itemsList);
-        })
-        .catch(err => console.error("Erreur de récupération :", err));
-    }
-
-    function renderSectors() {
-      const grid = document.getElementById('sectors-grid');
-      if (!grid) return;
-      grid.innerHTML = '';
-      MAPPING.forEach(item => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-option';
-        btn.innerText = item.sector;
-        btn.onclick = function() { selectSector(item, btn); };
-        grid.appendChild(btn);
-      });
-    }
-
-    function selectSector(item, btn) {
-      document.querySelectorAll('#sectors-grid .btn-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      
-      selectedSector = item;
-      selectedRoom = null;
-      document.getElementById('actions-box').style.display = 'none';
-
-      const roomsBox = document.getElementById('rooms-box');
-      const roomsGrid = document.getElementById('rooms-grid');
-      roomsGrid.innerHTML = '';
-
-      item.rooms.forEach(room => {
-        const rBtn = document.createElement('button');
-        rBtn.className = 'btn-option';
-        rBtn.innerText = room;
-        rBtn.onclick = function() { selectRoom(room, rBtn); };
-        roomsGrid.appendChild(rBtn);
-      });
-
-      roomsBox.style.display = 'block';
-    }
-
-    function selectRoom(room, btn) {
-      document.querySelectorAll('#rooms-grid .btn-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      
-      selectedRoom = room;
-      document.getElementById('selected-room-title').innerText = '3. Statut pour ' + room + ' (' + selectedSector.sector + ')';
-      document.getElementById('actions-box').style.display = 'block';
-      
-      document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
-    }
-
-    function updateStatus(pauseType, statusValue, btn) {
-      if (!selectedRoom) return;
-
-      const parentRow = btn.closest('.pause-row');
-      parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
-
-      const formData = new FormData();
-      formData.append('room', selectedRoom);
-      formData.append('pauseType', pauseType);
-      formData.append('status', statusValue);
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: formData
-      })
-      .then(() => {
-        document.getElementById('sync-status').innerText = "🟢 Enregistré !";
-        updateSynthBadge(selectedRoom, pauseType, statusValue);
-        fetchSavedData();
-      })
-      .catch(err => {
-        console.error("Erreur enregistrement :", err);
-        document.getElementById('sync-status').innerText = "🔴 Erreur";
-      });
-    }
-
-    function checkPendingAlerts(data) {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinutes = now.getMinutes();
-      const currentTimeInMinutes = currentHour * 60 + currentMinutes;
-
-      const morningStart = 9 * 60;          // 09h00
-      const morningEnd = 11 * 60 + 30;      // 11h30
-
-      const lunchStart = 12 * 60 + 30;      // 12h30
-      const lunchEnd = 14 * 60 + 30;        // 14h30
-
-      const afternoonStart = 15 * 60;       // 15h00
-      const afternoonEnd = 17 * 60 + 30;    // 17h30
-
-      const alertBox = document.getElementById('push-alert');
-      const alertMsg = document.getElementById('push-alert-message');
-
-      function getSectorForRoom(roomName) {
-        if (typeof MAPPING !== 'undefined') {
-          const match = MAPPING.find(m => m.rooms.includes(roomName));
-          if (match) return match.sector;
-        }
-        return "Secteur inconnu";
-      }
-
-      function needsRelay(status) {
-        if (!status) return false;
-        const str = status.toString().toLowerCase();
-        return str.includes("besoin") || str.includes("relais") || str.includes("non effectu");
-      }
-
-      let activeAlerts = [];
-      let alertTitle = "";
-
-      if (currentTimeInMinutes >= morningStart && currentTimeInMinutes <= morningEnd) {
-        alertTitle = "☕ Alerte Café Matin :";
-        activeAlerts = data.filter(item => {
-          const norm = normalizePauseType(item.pauseType);
-          return norm === "Café" && needsRelay(item.status);
-        });
-      }
-      else if (currentTimeInMinutes >= lunchStart && currentTimeInMinutes <= lunchEnd) {
-        alertTitle = "🚨 Alerte Déjeuner :";
-        activeAlerts = data.filter(item => {
-          const norm = normalizePauseType(item.pauseType);
-          return norm === "Repas" && needsRelay(item.status);
-        });
-      }
-      else if (currentTimeInMinutes >= afternoonStart && currentTimeInMinutes <= afternoonEnd) {
-        alertTitle = "☕🛒 Alertes Après-Midi :";
-        activeAlerts = data.filter(item => {
-          const norm = normalizePauseType(item.pauseType);
-          return (norm === "CaféPM" || norm === "Plein") && needsRelay(item.status);
-        });
-      }
-
-      if (activeAlerts.length > 0 && alertBox && alertMsg) {
-        const localRelays = getLocalRelays();
-        let html = `<strong>${alertTitle}</strong><ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
-
-        activeAlerts.forEach(item => {
-          const sector = getSectorForRoom(item.room);
-          const normPause = normalizePauseType(item.pauseType);
-          const key = item.room + '_' + normPause;
-          const isDoneLocally = localRelays[key] === true;
-
-          let statusText = "";
-          if (item.status && item.status.toString().toLowerCase().includes("non")) {
-            statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) n'a pas eu sa pause.`;
           } else {
-            statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
+            // Mise à jour de l'affichage du badge de pause
+            const cellEl = document.getElementById(`status-${entry.room}-${cleanType}`);
+            if (cellEl) {
+              cellEl.innerHTML = formatStatusBadge(entry.status);
+            }
           }
-
-          html += `
-            <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-              <span>• ${statusText}</span>
-              ${
-                isDoneLocally 
-                ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
-                : `<button onclick="resolveAlertLocally('${item.room}', '${normPause}')" 
-                           style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
-                      Remplacement à effectuer 👍
-                   </button>`
-              }
-            </li>`;
         });
-
-        html += `</ul>`;
-        alertMsg.innerHTML = html;
-        alertBox.style.display = 'block';
-      } else if (alertBox) {
-        alertBox.style.display = 'none';
+      } catch (err) {
+        console.error("Erreur de chargement des données :", err);
       }
     }
-    
-    function renderSynthTable() {
-      const tbody = document.getElementById('synth-tbody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
 
-      MAPPING.forEach(item => {
-        item.rooms.forEach((room, idx) => {
-          const tr = document.createElement('tr');
-
-          if (idx === 0) {
-            const tdSec = document.createElement('td');
-            tdSec.className = 'sector-cell';
-            tdSec.rowSpan = item.rooms.length;
-            tdSec.innerText = item.sector;
-            tr.appendChild(tdSec);
-          }
-
-          const tdRoom = document.createElement('td');
-          tdRoom.style.fontWeight = 'bold';
-          tdRoom.innerText = room;
-          tr.appendChild(tdRoom);
-
-          ['Café', 'Repas', 'CaféPM', 'Plein'].forEach(p => {
-            const td = document.createElement('td');
-            td.id = 'cell-' + room + '-' + p;
-            td.innerText = '-';
-            tr.appendChild(td);
-          });
-
-          tbody.appendChild(tr);
+    // Envoie la modification de remplacement à Google Sheets
+    async function updateRemplacement(room, pauseType, value) {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            room: room,
+            pauseType: "Remp " + pauseType,
+            status: value
+          })
         });
-      });
+      } catch (err) {
+        console.error("Erreur lors de l'envoi du remplacement :", err);
+      }
     }
 
-    function updateSynthBadge(room, pauseType, status) {
-      const cleanType = normalizePauseType(pauseType);
-      if (!cleanType) return;
-
-      const cellId = 'cell-' + room + '-' + cleanType;
-      const cell = document.getElementById(cellId);
-      if (!cell) return;
-
-      const localRelays = getLocalRelays();
-      const key = room + '_' + cleanType;
-      const isDoneLocally = localRelays[key] === true;
-
-      let badgeHTML = '-';
-      const st = status ? status.toString().toLowerCase() : '';
-
-      if (isDoneLocally) {
-        badgeHTML = '<span class="badge bg-green">👍</span>';
-      } else if (st.includes('effectu') && !st.includes('non')) {
-        badgeHTML = '<span class="badge bg-green">V</span>';
-      } else if (st.includes('prévu') || st.includes('prevu')) {
-        badgeHTML = '<span class="badge bg-blue">P</span>';
-      } else if (st.includes('besoin') || st.includes('relais')) {
-        badgeHTML = '<span class="badge bg-orange">B</span>';
-      } else if (st.includes('non')) {
-        badgeHTML = '<span class="badge bg-red">X</span>';
-      }
-
-      cell.innerHTML = badgeHTML;
+    function formatStatusBadge(status) {
+      if (!status) return "-";
+      let lower = status.toLowerCase();
+      if (lower.includes("besoin")) return `<span class="badge badge-besoin">${status}</span>`;
+      if (lower.includes("effectu")) return `<span class="badge badge-effectue">${status}</span>`;
+      if (lower.includes("pause")) return `<span class="badge badge-pause">${status}</span>`;
+      return status;
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-      if (typeof checkAuthOnLoad === 'function') {
-        checkAuthOnLoad();
-      }
+    // Initialisation
+    initTable();
+    loadData();
 
-      if (typeof renderSectors === 'function') renderSectors();
-      if (typeof renderSynthTable === 'function') renderSynthTable();
-
-      fetchSavedData();
-
-      setInterval(fetchSavedData, 10000);
-
-      const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      const tsDisplay = document.getElementById('timestamp-display');
-      if (tsDisplay) {
-        tsDisplay.innerText = 'Date du jour : ' + today;
-      }
-    });
+    // Synchronisation automatique toutes les 10 secondes sur tous les écrans
+    setInterval(loadData, 10000);
   </script>
 </body>
 </html>
