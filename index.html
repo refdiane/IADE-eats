@@ -248,25 +248,28 @@
     }
 
     function resolveAlertLocally(room, pauseType) {
-      const localRelays = getLocalRelays();
-      const key = room + '_' + normalizePauseType(pauseType);
-      localRelays[key] = true;
-      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
-      
-      // Mise à jour de la feuille
-      const formData = new FormData();
-      formData.append('room', room);
-      formData.append('pauseType', pauseType);
-      formData.append('status', 'Effectuée');
+  const localRelays = getLocalRelays();
+  const key = room + '_' + normalizePauseType(pauseType);
+  localRelays[key] = true;
+  localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
 
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: formData
-      }).then(() => {
-        fetchSavedData();
-      });
-    }
+  const formData = new URLSearchParams();
+  formData.append('room', room);
+  formData.append('pauseType', pauseType);
+  formData.append('status', 'Effectuée');
 
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  }).then(() => {
+    setTimeout(fetchSavedData, 1000);
+  });
+}
+    
     function normalizePauseType(type) {
       if (!type) return '';
       const t = type.toString().toLowerCase();
@@ -375,34 +378,40 @@
       document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
     }
 
-    function updateStatus(pauseType, statusValue, btn) {
-      if (!selectedRoom) return;
+   function updateStatus(pauseType, statusValue, btn) {
+  if (!selectedRoom) return;
 
-      const parentRow = btn.closest('.pause-row');
-      parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  const parentRow = btn.closest('.pause-row');
+  if (parentRow) {
+    parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
 
-      document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
+  document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
 
-      const formData = new FormData();
-      formData.append('room', selectedRoom);
-      formData.append('pauseType', pauseType);
-      formData.append('status', statusValue);
+  const formData = new URLSearchParams();
+  formData.append('room', selectedRoom);
+  formData.append('pauseType', pauseType);
+  formData.append('status', statusValue);
 
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: formData
-      })
-      .then(() => {
-        document.getElementById('sync-status').innerText = "🟢 Enregistré !";
-        updateSynthBadge(selectedRoom, pauseType, statusValue);
-        fetchSavedData();
-      })
-      .catch(err => {
-        console.error("Erreur enregistrement :", err);
-        document.getElementById('sync-status').innerText = "🔴 Erreur";
-      });
-    }
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  })
+  .then(() => {
+    document.getElementById('sync-status').innerText = "🟢 Enregistré !";
+    updateSynthBadge(selectedRoom, pauseType, statusValue);
+    setTimeout(fetchSavedData, 1000);
+  })
+  .catch(err => {
+    console.error("Erreur enregistrement :", err);
+    document.getElementById('sync-status').innerText = "🔴 Erreur";
+  });
+}
 
     function checkPendingAlerts(data) {
       const alertBox = document.getElementById('push-alert');
