@@ -58,7 +58,7 @@
     table.synth-table th { background: #34495e; color: white; }
     td.sector-cell { font-weight: bold; background: #f8f9fa; text-align: left; }
 
-    #sync-status { position: fixed; bottom: 15px; right: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; z-index: 999; }
+    #sync-status { position: fixed; bottom: 15px; right: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; }
   </style>
 </head>
 <body>
@@ -128,37 +128,37 @@
       <div class="pause-row">
         <div class="pause-label">Café matin ☕</div>
         <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Café matin', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Café matin', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Café matin', 'Non effectuée', this)">Non effectuée</button>
+          <button class="btn-status bg-green" onclick="updateStatus('Café matin☕', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Café matin☕', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Café matin☕', 'Non effectuée', this)">Non effectuée</button>
         </div>
       </div>
 
       <div class="pause-row">
         <div class="pause-label">Déjeuner 🍽️</div>
         <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Déjeuner', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-blue" onclick="updateStatus('Déjeuner', 'Pause prévue avec l\'équipe', this)">Pause prévue</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Déjeuner', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Déjeuner', 'Non effectuée', this)">Non effectuée</button>
+          <button class="btn-status bg-green" onclick="updateStatus('Déjeuner🍽️', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-blue" onclick="updateStatus('Déjeuner🍽️', 'Pause prévue avec l\'équipe', this)">Pause prévue</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Déjeuner🍽️', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Déjeuner🍽️', 'Non effectuée', this)">Non effectuée</button>
         </div>
       </div>
 
       <div class="pause-row">
         <div class="pause-label">Café après-midi ☕</div>
         <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Café après-midi', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Café après-midi', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Café après-midi', 'Non effectuée', this)">Non effectuée</button>
+          <button class="btn-status bg-green" onclick="updateStatus('Café après-midi ☕', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Café après-midi ☕', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Café après-midi ☕', 'Non effectuée', this)">Non effectuée</button>
         </div>
       </div>
 
       <div class="pause-row">
         <div class="pause-label">Relais Plein 🛒</div>
         <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Relais Plein', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Relais Plein', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Relais Plein', 'Non effectuée', this)">Non effectuée</button>
+          <button class="btn-status bg-green" onclick="updateStatus('Relais Plein🛒', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Relais Plein🛒', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Relais Plein🛒', 'Non effectuée', this)">Non effectuée</button>
         </div>
       </div>
     </div>
@@ -170,9 +170,8 @@
 
     <div class="legend-box">
       <div class="legend-item"><span class="badge bg-green">V</span> Effectuée</div>
-      <div class="legend-item"><span class="badge bg-green">👍</span> Relais effectué</div>
       <div class="legend-item"><span class="badge bg-blue">P</span> Pause prévue</div>
-      <div class="legend-item"><span class="badge bg-orange">⏳</span> Remplacement prévu</div>
+      <div class="legend-item"><span class="badge bg-orange">B</span> Besoin relais</div>
       <div class="legend-item"><span class="badge bg-red">X</span> Non effectuée</div>
     </div>
 
@@ -233,65 +232,51 @@
       { sector: "Vasculaire 🩸", rooms: ["S23", "S24", "S25"] },
       { sector: "Thorax 🫁", rooms: ["S26", "S27", "S28"] },
       { sector: "SSPI Nord-Nord 🏥", rooms: ["SSPI Nord-Nord"] },
-      { sector: "NRI ☣️", rooms: ["SBiplan", "SMonoplan", "STDM"] }
+      { sector: "NRI ☢️", rooms: ["SBiplan", "SMonoplan", "STDM"] }
     ];
 
     let selectedSector = null;
     let selectedRoom = null;
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydPsjeyRnt4QhvHvj34z-P2IY3TXABlCemVGSPudkmQktQKJrDxqbMdJTJ6JqaXn4SiA/exec";
 
-    function sendRemplacementToSheet(room, normPauseType, newStatus) {
-      document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
+    function getLocalRelays() {
+      try {
+        return JSON.parse(localStorage.getItem('iade_eats_local_relays') || '{}');
+      } catch(e) {
+        return {};
+      }
+    }
 
-      let cleanPause = "Café matin";
-      if (normPauseType === "Repas") cleanPause = "Déjeuner";
-      if (normPauseType === "CaféPM") cleanPause = "Café après-midi";
-      if (normPauseType === "Plein") cleanPause = "Relais Plein";
-
-      const rempPauseType = "Remp " + cleanPause;
-
-      const payload = new URLSearchParams();
-      payload.append('room', room);
-      payload.append('pauseType', rempPauseType);
-      payload.append('status', newStatus);
+    function resolveAlertLocally(room, pauseType) {
+      const localRelays = getLocalRelays();
+      const key = room + '_' + normalizePauseType(pauseType);
+      localRelays[key] = true;
+      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
+      
+      // Mise à jour de la feuille
+      const formData = new FormData();
+      formData.append('room', room);
+      formData.append('pauseType', pauseType);
+      formData.append('status', 'Effectuée');
 
       fetch(SCRIPT_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: payload
-      })
-      .then(() => {
-        document.getElementById('sync-status').innerText = "🟢 Enregistré !";
+        body: formData
+      }).then(() => {
         fetchSavedData();
-      })
-      .catch(err => {
-        console.error("Erreur enregistrement remplacement :", err);
-        document.getElementById('sync-status').innerText = "🔴 Erreur";
       });
     }
 
     function normalizePauseType(type) {
       if (!type) return '';
-      
-      const cleanStr = type.toString()
-        .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
-        .trim()
-        .toLowerCase();
+      const t = type.toString().toLowerCase();
 
-      if (cleanStr.includes('après-midi') || cleanStr.includes('apres-midi') || cleanStr.includes('pm')) {
-        return 'CaféPM';
-      }
-      if (cleanStr.includes('matin') || cleanStr.includes('café') || cleanStr.includes('cafe')) {
-        return 'Café';
-      }
-      if (cleanStr.includes('déjeuner') || cleanStr.includes('dejeuner') || cleanStr.includes('repas')) {
-        return 'Repas';
-      }
-      if (cleanStr.includes('plein') || cleanStr.includes('relais')) {
-        return 'Plein';
-      }
+      if (t.includes('après-midi') || t.includes('apres-midi') || t.includes('cafepm') || t.includes('pm')) return 'CaféPM';
+      if (t.includes('matin') || (t.includes('café') && !t.includes('après-midi') && !t.includes('pm'))) return 'Café';
+      if (t.includes('déjeuner') || t.includes('dejeuner') || t.includes('repas')) return 'Repas';
+      if (t.includes('plein')) return 'Plein';
 
-      return cleanStr;
+      return type;
     }
 
     function switchTab(tabId) {
@@ -317,13 +302,24 @@
             data.forEach(row => {
               if (row.room && row.pauseType) {
                 itemsList.push(row);
+              } else if (row["Salles d'opération"]) {
+                const room = row["Salles d'opération"];
+                Object.keys(row).forEach(key => {
+                  if (key !== "Secteurs" && key !== "Salles d'opération" && key !== "Date du jour" && !key.includes("Remplacement")) {
+                    itemsList.push({
+                      room: room,
+                      pauseType: key,
+                      status: row[key]
+                    });
+                  }
+                });
               }
             });
           }
 
           itemsList.forEach(item => {
-            if (item.status && !item.pauseType.startsWith("Remp ")) {
-              updateSynthBadge(item.room, item.pauseType, item.status, itemsList);
+            if (item.status) {
+              updateSynthBadge(item.room, item.pauseType, item.status);
             }
           });
 
@@ -388,18 +384,18 @@
 
       document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
 
-      const payload = new URLSearchParams();
-      payload.append('room', selectedRoom);
-      payload.append('pauseType', pauseType);
-      payload.append('status', statusValue);
+      const formData = new FormData();
+      formData.append('room', selectedRoom);
+      formData.append('pauseType', pauseType);
+      formData.append('status', statusValue);
 
       fetch(SCRIPT_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: payload
+        body: formData
       })
       .then(() => {
         document.getElementById('sync-status').innerText = "🟢 Enregistré !";
+        updateSynthBadge(selectedRoom, pauseType, statusValue);
         fetchSavedData();
       })
       .catch(err => {
@@ -409,20 +405,6 @@
     }
 
     function checkPendingAlerts(data) {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinutes = now.getMinutes();
-      const currentTimeInMinutes = currentHour * 60 + currentMinutes;
-
-      const morningStart = 9 * 60;          // 09h00
-      const morningEnd = 11 * 60 + 30;      // 11h30
-
-      const lunchStart = 12 * 60 + 30;      // 12h30
-      const lunchEnd = 14 * 60 + 30;        // 14h30
-
-      const afternoonStart = 15 * 60;       // 15h00
-      const afternoonEnd = 17 * 60 + 30;    // 17h30
-
       const alertBox = document.getElementById('push-alert');
       const alertMsg = document.getElementById('push-alert-message');
 
@@ -440,66 +422,31 @@
         return str.includes("besoin") || str.includes("relais") || str.includes("non effectu");
       }
 
-      let activeAlerts = [];
-      let alertTitle = "";
-
-      if (currentTimeInMinutes >= morningStart && currentTimeInMinutes <= morningEnd) {
-        alertTitle = "☕ Alerte Café Matin :";
-        activeAlerts = data.filter(item => {
-          const norm = normalizePauseType(item.pauseType);
-          return norm === "Café" && !item.pauseType.startsWith("Remp ") && needsRelay(item.status);
-        });
-      }
-      else if (currentTimeInMinutes >= lunchStart && currentTimeInMinutes <= lunchEnd) {
-        alertTitle = "🚨 Alerte Déjeuner :";
-        activeAlerts = data.filter(item => {
-          const norm = normalizePauseType(item.pauseType);
-          return norm === "Repas" && !item.pauseType.startsWith("Remp ") && needsRelay(item.status);
-        });
-      }
-      else if (currentTimeInMinutes >= afternoonStart && currentTimeInMinutes <= afternoonEnd) {
-        alertTitle = "☕🛒 Alertes Après-Midi :";
-        activeAlerts = data.filter(item => {
-          const norm = normalizePauseType(item.pauseType);
-          return (norm === "CaféPM" || norm === "Plein") && !item.pauseType.startsWith("Remp ") && needsRelay(item.status);
-        });
-      }
+      let activeAlerts = data.filter(item => needsRelay(item.status));
 
       if (activeAlerts.length > 0 && alertBox && alertMsg) {
-        let html = `<strong>${alertTitle}</strong><ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
+        const localRelays = getLocalRelays();
+        let html = `<strong>🚨 Demandes de relais actives :</strong><ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
 
         activeAlerts.forEach(item => {
           const sector = getSectorForRoom(item.room);
           const normPause = normalizePauseType(item.pauseType);
+          const key = item.room + '_' + normPause;
+          const isDoneLocally = localRelays[key] === true;
 
-          const rempMatch = data.find(r => r.room === item.room && normalizePauseType(r.pauseType) === normPause && r.pauseType.startsWith("Remp "));
-          const rempStatus = rempMatch ? rempMatch.status.toString().toLowerCase() : "";
-
-          let statusText = "";
-          if (item.status && item.status.toString().toLowerCase().includes("non")) {
-            statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) n'a pas eu sa pause.`;
-          } else {
-            statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
-          }
-
-          let actionButtonsHTML = "";
-
-          if (rempStatus.includes("relais") || rempStatus.includes("effectu") || rempStatus.includes("👍")) {
-            actionButtonsHTML = `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`;
-          } 
-          else {
-            actionButtonsHTML = `
-              <span style="color: #d97706; font-weight: bold; font-size: 0.85rem; margin-right: 8px;">Remplacement à effectuer ⏳</span>
-              <button onclick="sendRemplacementToSheet('${item.room}', '${normPause}', 'relais effectué 👍')" 
-                     style="background: #10b981; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
-                Valider relais effectué 👍
-              </button>`;
-          }
+          let statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
 
           html += `
-            <li style="margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px;">
+            <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
               <span>• ${statusText}</span>
-              <div>${actionButtonsHTML}</div>
+              ${
+                isDoneLocally 
+                ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
+                : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
+                           style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">
+                      Remplacement à effectuer 👍
+                   </button>`
+              }
             </li>`;
         });
 
@@ -545,45 +492,29 @@
       });
     }
 
-    function updateSynthBadge(room, pauseType, status, allData) {
-      const cleanType = normalizePauseType(pauseType);
-      if (!cleanType) return;
-
-      const cellId = 'cell-' + room + '-' + cleanType;
+    function updateSynthBadge(room, pauseType, status) {
+      const normType = normalizePauseType(pauseType);
+      const cellId = 'cell-' + room + '-' + normType;
       const cell = document.getElementById(cellId);
       if (!cell) return;
+
+      const localRelays = getLocalRelays();
+      const key = room + '_' + normType;
+      const isDoneLocally = localRelays[key] === true;
 
       let badgeHTML = '-';
       const st = status ? status.toString().toLowerCase() : '';
 
-      // Recherche d'un éventuel remplacement saisi pour la pause concernée
-      let rempStatus = "";
-      if (allData) {
-        const rempMatch = allData.find(r => 
-          r.room === room && 
-          normalizePauseType(r.pauseType) === cleanType && 
-          r.pauseType.toString().toLowerCase().includes("remp")
-        );
-        if (rempMatch && rempMatch.status) {
-          rempStatus = rempMatch.status.toString().toLowerCase();
-        }
-      }
-
-      // Priorité 1 : Le relais a été validé par un collègue
-      if (rempStatus.includes("relais") || rempStatus.includes("effectu") || rempStatus.includes("👍")) {
-        badgeHTML = '<span class="badge bg-green" title="Relais effectué">👍</span>';
-      }
-      // Priorité 2 : Pause demandée par l'IADE de la salle
-      else if (st.includes('besoin') || st.includes('relais') || st.includes('non')) {
-        badgeHTML = '<span class="badge bg-orange" title="Remplacement à effectuer">⏳</span>';
-      } 
-      // Priorité 3 : Pause effectuée par l'IADE de la salle directement
-      else if (st.includes('effectu')) {
+      if (isDoneLocally) {
+        badgeHTML = '<span class="badge bg-green">👍</span>';
+      } else if (st.includes('effectu') && !st.includes('non')) {
         badgeHTML = '<span class="badge bg-green">V</span>';
-      } 
-      // Priorité 4 : Pause prévue
-      else if (st.includes('prévu') || st.includes('prevu')) {
+      } else if (st.includes('prévu') || st.includes('prevu')) {
         badgeHTML = '<span class="badge bg-blue">P</span>';
+      } else if (st.includes('besoin') || st.includes('relais')) {
+        badgeHTML = '<span class="badge bg-orange">B</span>';
+      } else if (st.includes('non')) {
+        badgeHTML = '<span class="badge bg-red">X</span>';
       }
 
       cell.innerHTML = badgeHTML;
