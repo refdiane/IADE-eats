@@ -413,7 +413,7 @@
   });
 }
 
-    function checkPendingAlerts(data) {
+  function checkPendingAlerts(data) {
   const alertBox = document.getElementById('push-alert');
   const alertMsg = document.getElementById('push-alert-message');
 
@@ -431,7 +431,7 @@
     return str.includes("besoin") || str.includes("relais") || str.includes("non effectu");
   }
 
-  // 1. Horaires des créneaux
+  // Créneaux horaires
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
@@ -457,13 +457,11 @@
     return;
   }
 
-  // 2. Filtrage des demandes pour la pause active
   let activeAlerts = data.filter(item => {
     const isMatchingPause = normalizePauseType(item.pauseType) === activePauseType;
     return isMatchingPause && needsRelay(item.status);
   });
 
-  // 3. Construction du message et des boutons
   if (activeAlerts.length > 0 && alertBox && alertMsg) {
     const localRelays = getLocalRelays();
     let html = `<strong style="font-size: 1rem;">🚨 Demandes de relais — ${activePauseLabel} :</strong>
@@ -474,8 +472,9 @@
       const normPause = normalizePauseType(item.pauseType);
       const key = item.room + '_' + normPause;
       
-      // On s'assure que la clé existe explicitement à true
+      // On vérifie si l'action a été faite localement OU si le Sheet renvoie "Relais effectué"
       const isDoneLocally = (localRelays && localRelays[key] === true);
+      const isDoneInSheet = item.replacementStatus && item.replacementStatus.indexOf("effectué") !== -1;
 
       let statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
 
@@ -483,7 +482,7 @@
         <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
           <span>• ${statusText}</span>
           ${
-            isDoneLocally 
+            (isDoneLocally || isDoneInSheet)
             ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
             : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
                        style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">
@@ -499,7 +498,8 @@
   } else if (alertBox) {
     alertBox.style.display = 'none';
   }
-}
+} 
+    
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
       if (!tbody) return;
