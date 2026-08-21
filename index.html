@@ -413,60 +413,99 @@
   });
 }
 
-    function checkPendingAlerts(data) {
-      const alertBox = document.getElementById('push-alert');
-      const alertMsg = document.getElementById('push-alert-message');
+function checkPendingAlerts(data) {
+  const alertBox = document.getElementById('push-alert');
+  const alertMsg = document.getElementById('push-alert-message');
 
-      function getSectorForRoom(roomName) {
-        if (typeof MAPPING !== 'undefined') {
-          const match = MAPPING.find(m => m.rooms.includes(roomName));
-          if (match) return match.sector;
-        }
-        return "Secteur inconnu";
-      }
-
-      function needsRelay(status) {
-        if (!status) return false;
-        const str = status.toString().toLowerCase();
-        return str.includes("besoin") || str.includes("relais") || str.includes("non effectu");
-      }
-
-      let activeAlerts = data.filter(item => needsRelay(item.status));
-
-      if (activeAlerts.length > 0 && alertBox && alertMsg) {
-        const localRelays = getLocalRelays();
-        let html = `<strong>🚨 Demandes de relais actives :</strong><ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
-
-        activeAlerts.forEach(item => {
-          const sector = getSectorForRoom(item.room);
-          const normPause = normalizePauseType(item.pauseType);
-          const key = item.room + '_' + normPause;
-          const isDoneLocally = localRelays[key] === true;
-
-          let statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
-
-          html += `
-            <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-              <span>• ${statusText}</span>
-              ${
-                isDoneLocally 
-                ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
-                : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
-                           style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">
-                      Remplacement à effectuer 👍
-                   </button>`
-              }
-            </li>`;
-        });
-
-        html += `</ul>`;
-        alertMsg.innerHTML = html;
-        alertBox.style.display = 'block';
-      } else if (alertBox) {
-        alertBox.style.display = 'none';
-      }
+  function getSectorForRoom(roomName) {
+    if (typeof MAPPING !== 'undefined') {
+      const match = MAPPING.find(m => m.rooms.includes(roomName));
+      if (match) return match.sector;
     }
-    
+    return "Secteur inconnu";
+  }
+
+  function needsRelay(status) {
+    if (!status) return false;
+    const str = status.toString().toLowerCase();
+    return str.includes("besoin") || str.includes("relais") || str.includes("non effectu");
+  }
+
+  // 1. Détermination du créneau horaire actif
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  let activePauseType = null;
+  let activePauseLabel = "";
+
+  // Café matin ☕ : 09h00 (540 min) à 11h30 (690 min)
+  if (currentMinutes >= 540 && currentMinutes < 690) {
+    activePauseType = "Café";
+    activePauseLabel = "Café matin ☕";
+  } 
+  // Déjeuner 🍽️ : 12h00 (720 min) à 14h30 (870 min)
+  else if (currentMinutes >= 720 && currentMinutes < 870) {
+    activePauseType = "Repas";
+    activePauseLabel = "Déjeuner 🍽️";
+  } 
+  // Café après-midi ☕ : 14h30 (870 min) à 16h30 (990 min)
+  else if (currentMinutes >= 870 && currentMinutes < 990) {
+    activePauseType = "CaféPM";
+    activePauseLabel = "Café après ☕";
+  } 
+  // Relais plein 🛒 : 15h00 (900 min) à 17h30 (1050 min)
+  else if (currentMinutes >= 900 && currentMinutes <= 1050) {
+    activePauseType = "Plein";
+    activePauseLabel = "Relais plein 🛒";
+  }
+
+  // Hors créneau : masque la bannière
+  if (!activePauseType) {
+    if (alertBox) alertBox.style.display = 'none';
+    return;
+  }
+
+  // 2. Filtrage des alertes du créneau horaire en cours uniquement
+  let activeAlerts = data.filter(item => {
+    const isMatchingPause = normalizePauseType(item.pauseType) === activePauseType;
+    return isMatchingPause && needsRelay(item.status);
+  });
+
+  // 3. Affichage avec titre de la pause et bouton d'action
+  if (activeAlerts.length > 0 && alertBox && alertMsg) {
+    const localRelays = getLocalRelays();
+    let html = `<strong style="font-size: 1rem;">🚨 Demandes de relais — ${activePauseLabel} :</strong>
+                <ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
+
+    activeAlerts.forEach(item => {
+      const sector = getSectorForRoom(item.room);
+      const normPause = normalizePauseType(item.pauseType);
+      const key = item.room + '_' + normPause;
+      const isDoneLocally = localRelays[key] === true;
+
+      let statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
+
+      html += `
+        <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <span>• ${statusText}</span>
+          ${
+            isDoneLocally 
+            ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
+            : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
+                       style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">
+                  Remplacement à effectuer 👍
+               </button>`
+          }
+        </li>`;
+    });
+
+    html += `</ul>`;
+    alertMsg.innerHTML = html;
+    alertBox.style.display = 'block';
+  } else if (alertBox) {
+    alertBox.style.display = 'none';
+  }
+}
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
       if (!tbody) return;
