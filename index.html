@@ -58,7 +58,7 @@
     table.synth-table th { background: #34495e; color: white; }
     td.sector-cell { font-weight: bold; background: #f8f9fa; text-align: left; }
 
-    #sync-status { position: fixed; bottom: 15px; right: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; }
+    #sync-status { position: fixed; bottom: 15px; right: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; z-index: 1000; }
   </style>
 </head>
 <body>
@@ -93,10 +93,10 @@
   </div>
   
   <header style="display: flex; align-items: center; padding: 12px 20px; gap: 15px;">
-    <img src="https://i.ibb.co/SX6jDtYm/logo.png" alt="Logo IADE Eats" style="height: 4cm; width: 4cm; border-radius: 8px; object-fit: cover;">
+    <img src="https://i.ibb.co/SX6jDtYm/logo.png" alt="Logo IADE Eats" style="height: 3.5cm; width: 3.5cm; border-radius: 8px; object-fit: cover;">
     <div>
       <h1 style="font-size: 1.5rem; text-align: left; margin: 0;">IADE Eats</h1>
-      <p style="font-size: 0.8rem; margin: 0; text-align: left;">Suivi des différents niveaux (stomacal, vésical, caféïnique, nicotinique...) IADEsque en temps réel. Anonymat voulu et assumé</p>
+      <p style="font-size: 0.8rem; margin: 0; text-align: left;">Suivi des différents niveaux (stomacal, vésical, caféïnique, nicotinique...) IADEsque en temps réel.</p>
     </div>
   </header>
 
@@ -241,6 +241,15 @@
 
     function getLocalRelays() {
       try {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const savedDate = localStorage.getItem('iade_eats_relays_date');
+        
+        // Réinitialisation quotidienne du cache local
+        if (savedDate !== todayStr) {
+          localStorage.setItem('iade_eats_relays_date', todayStr);
+          localStorage.setItem('iade_eats_local_relays', '{}');
+          return {};
+        }
         return JSON.parse(localStorage.getItem('iade_eats_local_relays') || '{}');
       } catch(e) {
         return {};
@@ -248,27 +257,27 @@
     }
 
     function resolveAlertLocally(room, pauseType) {
-  const localRelays = getLocalRelays();
-  const key = room + '_' + normalizePauseType(pauseType);
-  localRelays[key] = true;
-  localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
+      const localRelays = getLocalRelays();
+      const key = room + '_' + normalizePauseType(pauseType);
+      localRelays[key] = true;
+      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
 
-  const formData = new URLSearchParams();
-  formData.append('room', room);
-  formData.append('pauseType', pauseType);
-  formData.append('status', 'Effectuée');
+      const formData = new URLSearchParams();
+      formData.append('room', room);
+      formData.append('pauseType', pauseType);
+      formData.append('status', 'Effectuée');
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData.toString()
-  }).then(() => {
-    setTimeout(fetchSavedData, 1000);
-  });
-}
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString()
+      }).then(() => {
+        setTimeout(fetchSavedData, 1000);
+      });
+    }
     
     function normalizePauseType(type) {
       if (!type) return '';
@@ -303,20 +312,30 @@
 
           if (Array.isArray(data)) {
             data.forEach(row => {
-              if (row.room && row.pauseType) {
-                itemsList.push(row);
-              } else if (row["Salles d'opération"]) {
-                const room = row["Salles d'opération"];
-                Object.keys(row).forEach(key => {
-                  if (key !== "Secteurs" && key !== "Salles d'opération" && key !== "Date du jour" && !key.includes("Remplacement")) {
-                    itemsList.push({
-                      room: room,
-                      pauseType: key,
-                      status: row[key]
-                    });
-                  }
-                });
-              }
+              // Extraction robuste des salles (supporte "Salles d'opération", "Salle", "room")
+              const room = row["Salles d'opération"] || row["Salle"] || row["room"];
+              if (!room) return;
+
+              Object.keys(row).forEach(key => {
+                const keyClean = key.toString().trim();
+                // On s'intéresse uniquement aux colonnes de pauses principales
+                if (keyClean.includes("Café") || keyClean.includes("Déjeuner") || keyClean.includes("Plein")) {
+                  
+                  // Déduction dynamique du nom de la colonne de remplacement associée
+                  let repColName = "";
+                  if (keyClean.includes("Café matin")) repColName = "Remplacement Café matin";
+                  else if (keyClean.includes("Déjeuner")) repColName = "Remplacement Déjeuner";
+                  else if (keyClean.includes("Café après-midi")) repColName = "Remplacement Café après-midi";
+                  else if (keyClean.includes("Plein")) repColName = "Remplacement Plein";
+
+                  itemsList.push({
+                    room: room,
+                    pauseType: keyClean,
+                    status: row[keyClean],
+                    replacementStatus: row[repColName] || ""
+                  });
+                }
+              });
             });
           }
 
@@ -378,127 +397,126 @@
       document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
     }
 
-   function updateStatus(pauseType, statusValue, btn) {
-  if (!selectedRoom) return;
+    function updateStatus(pauseType, statusValue, btn) {
+      if (!selectedRoom) return;
 
-  const parentRow = btn.closest('.pause-row');
-  if (parentRow) {
-    parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
+      const parentRow = btn.closest('.pause-row');
+      if (parentRow) {
+        parentRow.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
 
-  document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
+      document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
 
-  const formData = new URLSearchParams();
-  formData.append('room', selectedRoom);
-  formData.append('pauseType', pauseType);
-  formData.append('status', statusValue);
+      const formData = new URLSearchParams();
+      formData.append('room', selectedRoom);
+      formData.append('pauseType', pauseType);
+      formData.append('status', statusValue);
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData.toString()
-  })
-  .then(() => {
-    document.getElementById('sync-status').innerText = "🟢 Enregistré !";
-    updateSynthBadge(selectedRoom, pauseType, statusValue);
-    setTimeout(fetchSavedData, 1000);
-  })
-  .catch(err => {
-    console.error("Erreur enregistrement :", err);
-    document.getElementById('sync-status').innerText = "🔴 Erreur";
-  });
-}
-
-  function checkPendingAlerts(data) {
-  const alertBox = document.getElementById('push-alert');
-  const alertMsg = document.getElementById('push-alert-message');
-
-  function getSectorForRoom(roomName) {
-    if (typeof MAPPING !== 'undefined') {
-      const match = MAPPING.find(m => m.rooms.includes(roomName));
-      if (match) return match.sector;
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString()
+      })
+      .then(() => {
+        document.getElementById('sync-status').innerText = "🟢 Enregistré !";
+        updateSynthBadge(selectedRoom, pauseType, statusValue);
+        setTimeout(fetchSavedData, 1000);
+      })
+      .catch(err => {
+        console.error("Erreur enregistrement :", err);
+        document.getElementById('sync-status').innerText = "🔴 Erreur";
+      });
     }
-    return "Secteur inconnu";
-  }
 
-  function needsRelay(status) {
-    if (!status) return false;
-    const str = status.toString().toLowerCase();
-    return str.includes("besoin") || str.includes("relais") || str.includes("non effectu");
-  }
+    function checkPendingAlerts(data) {
+      const alertBox = document.getElementById('push-alert');
+      const alertMsg = document.getElementById('push-alert-message');
 
-  // Créneaux horaires
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      function getSectorForRoom(roomName) {
+        if (typeof MAPPING !== 'undefined') {
+          const match = MAPPING.find(m => m.rooms.includes(roomName));
+          if (match) return match.sector;
+        }
+        return "Secteur inconnu";
+      }
 
-  let activePauseType = null;
-  let activePauseLabel = "";
+      function needsRelay(status) {
+        if (!status) return false;
+        const str = status.toString().toLowerCase();
+        return str.includes("besoin") || str.includes("relais");
+      }
 
-  if (currentMinutes >= 540 && currentMinutes < 690) {
-    activePauseType = "Café";
-    activePauseLabel = "Café matin ☕";
-  } else if (currentMinutes >= 720 && currentMinutes < 870) {
-    activePauseType = "Repas";
-    activePauseLabel = "Déjeuner 🍽️";
-  } else if (currentMinutes >= 870 && currentMinutes < 990) {
-    activePauseType = "CaféPM";
-    activePauseLabel = "Café après ☕";
-  } else if (currentMinutes >= 900 && currentMinutes <= 1050) {
-    activePauseType = "Plein";
-    activePauseLabel = "Relais plein 🛒";
-  }
+      // Créneaux horaires d'activation des alertes
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  if (!activePauseType) {
-    if (alertBox) alertBox.style.display = 'none';
-    return;
-  }
+      let activePauseType = null;
+      let activePauseLabel = "";
 
-  let activeAlerts = data.filter(item => {
-    const isMatchingPause = normalizePauseType(item.pauseType) === activePauseType;
-    return isMatchingPause && needsRelay(item.status);
-  });
+      if (currentMinutes >= 540 && currentMinutes < 690) { // 09h00 -> 11h30
+        activePauseType = "Café";
+        activePauseLabel = "Café matin ☕";
+      } else if (currentMinutes >= 720 && currentMinutes < 870) { // 12h00 -> 14h30
+        activePauseType = "Repas";
+        activePauseLabel = "Déjeuner 🍽️";
+      } else if (currentMinutes >= 870 && currentMinutes < 990) { // 14h30 -> 16h30
+        activePauseType = "CaféPM";
+        activePauseLabel = "Café après-midi ☕";
+      } else if (currentMinutes >= 900 && currentMinutes <= 1050) { // 15h00 -> 17h30
+        activePauseType = "Plein";
+        activePauseLabel = "Relais plein 🛒";
+      }
 
-  if (activeAlerts.length > 0 && alertBox && alertMsg) {
-    const localRelays = getLocalRelays();
-    let html = `<strong style="font-size: 1rem;">🚨 Demandes de relais — ${activePauseLabel} :</strong>
-                <ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
+      if (!activePauseType) {
+        if (alertBox) alertBox.style.display = 'none';
+        return;
+      }
 
-    activeAlerts.forEach(item => {
-      const sector = getSectorForRoom(item.room);
-      const normPause = normalizePauseType(item.pauseType);
-      const key = item.room + '_' + normPause;
-      
-      // On vérifie si l'action a été faite localement OU si le Sheet renvoie "Relais effectué"
-      const isDoneLocally = (localRelays && localRelays[key] === true);
-      const isDoneInSheet = item.replacementStatus && item.replacementStatus.indexOf("effectué") !== -1;
+      let activeAlerts = data.filter(item => {
+        const isMatchingPause = normalizePauseType(item.pauseType) === activePauseType;
+        return isMatchingPause && needsRelay(item.status);
+      });
 
-      let statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
+      if (activeAlerts.length > 0 && alertBox && alertMsg) {
+        const localRelays = getLocalRelays();
+        let html = `<strong style="font-size: 1rem;">🚨 Demandes de relais — ${activePauseLabel} :</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
 
-      html += `
-        <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-          <span>• ${statusText}</span>
-          ${
-            (isDoneLocally || isDoneInSheet)
-            ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
-            : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
-                       style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">
-                  Remplacement à effectuer 👍
-               </button>`
-          }
-        </li>`;
-    });
+        activeAlerts.forEach(item => {
+          const sector = getSectorForRoom(item.room);
+          const normPause = normalizePauseType(item.pauseType);
+          const key = item.room + '_' + normPause;
+          
+          const isDoneLocally = (localRelays && localRelays[key] === true);
+          const isDoneInSheet = item.replacementStatus && item.replacementStatus.toLowerCase().includes("effectué");
 
-    html += `</ul>`;
-    alertMsg.innerHTML = html;
-    alertBox.style.display = 'block';
-  } else if (alertBox) {
-    alertBox.style.display = 'none';
-  }
-} 
+          let statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
+
+          html += `
+            <li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+              <span>• ${statusText}</span>
+              ${
+                (isDoneLocally || isDoneInSheet)
+                ? `<span style="color: #10b981; font-weight: bold; font-size: 0.85rem;">Relais effectué 👍</span>`
+                : `<button onclick="resolveAlertLocally('${item.room}', '${item.pauseType}')" 
+                           style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">
+                      Remplacement à effectuer 👍
+                   </button>`
+              }
+            </li>`;
+        });
+
+        html += `</ul>`;
+        alertMsg.innerHTML = html;
+        alertBox.style.display = 'block';
+      } else if (alertBox) {
+        alertBox.style.display = 'none';
+      }
+    } 
     
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
