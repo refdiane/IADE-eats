@@ -413,7 +413,7 @@
   });
 }
 
-function checkPendingAlerts(data) {
+    function checkPendingAlerts(data) {
   const alertBox = document.getElementById('push-alert');
   const alertMsg = document.getElementById('push-alert-message');
 
@@ -431,47 +431,39 @@ function checkPendingAlerts(data) {
     return str.includes("besoin") || str.includes("relais") || str.includes("non effectu");
   }
 
-  // 1. Détermination du créneau horaire actif
+  // 1. Horaires des créneaux
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   let activePauseType = null;
   let activePauseLabel = "";
 
-  // Café matin ☕ : 09h00 (540 min) à 11h30 (690 min)
   if (currentMinutes >= 540 && currentMinutes < 690) {
     activePauseType = "Café";
     activePauseLabel = "Café matin ☕";
-  } 
-  // Déjeuner 🍽️ : 12h00 (720 min) à 14h30 (870 min)
-  else if (currentMinutes >= 720 && currentMinutes < 870) {
+  } else if (currentMinutes >= 720 && currentMinutes < 870) {
     activePauseType = "Repas";
     activePauseLabel = "Déjeuner 🍽️";
-  } 
-  // Café après-midi ☕ : 14h30 (870 min) à 16h30 (990 min)
-  else if (currentMinutes >= 870 && currentMinutes < 990) {
+  } else if (currentMinutes >= 870 && currentMinutes < 990) {
     activePauseType = "CaféPM";
     activePauseLabel = "Café après ☕";
-  } 
-  // Relais plein 🛒 : 15h00 (900 min) à 17h30 (1050 min)
-  else if (currentMinutes >= 900 && currentMinutes <= 1050) {
+  } else if (currentMinutes >= 900 && currentMinutes <= 1050) {
     activePauseType = "Plein";
     activePauseLabel = "Relais plein 🛒";
   }
 
-  // Hors créneau : masque la bannière
   if (!activePauseType) {
     if (alertBox) alertBox.style.display = 'none';
     return;
   }
 
-  // 2. Filtrage des alertes du créneau horaire en cours uniquement
+  // 2. Filtrage des demandes pour la pause active
   let activeAlerts = data.filter(item => {
     const isMatchingPause = normalizePauseType(item.pauseType) === activePauseType;
     return isMatchingPause && needsRelay(item.status);
   });
 
-  // 3. Affichage avec titre de la pause et bouton d'action
+  // 3. Construction du message et des boutons
   if (activeAlerts.length > 0 && alertBox && alertMsg) {
     const localRelays = getLocalRelays();
     let html = `<strong style="font-size: 1rem;">🚨 Demandes de relais — ${activePauseLabel} :</strong>
@@ -481,7 +473,9 @@ function checkPendingAlerts(data) {
       const sector = getSectorForRoom(item.room);
       const normPause = normalizePauseType(item.pauseType);
       const key = item.room + '_' + normPause;
-      const isDoneLocally = localRelays[key] === true;
+      
+      // On s'assure que la clé existe explicitement à true
+      const isDoneLocally = (localRelays && localRelays[key] === true);
 
       let statusText = `L'IADE de la salle <strong>${item.room}</strong> (${sector}) a besoin d'un relais.`;
 
