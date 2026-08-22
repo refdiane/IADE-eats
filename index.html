@@ -312,21 +312,23 @@
 
           if (Array.isArray(data)) {
             data.forEach(row => {
-              // Extraction robuste des salles (supporte "Salles d'opération", "Salle", "room")
+              // Extraction robuste des salles
               const room = row["Salles d'opération"] || row["Salle"] || row["room"];
               if (!room) return;
 
               Object.keys(row).forEach(key => {
                 const keyClean = key.toString().trim();
-                // On s'intéresse uniquement aux colonnes de pauses principales
-                if (keyClean.includes("Café") || keyClean.includes("Déjeuner") || keyClean.includes("Plein")) {
+                const keyLower = keyClean.toLowerCase();
+
+                // On s'intéresse aux colonnes de pauses (en minuscules)
+                if (keyLower.includes("café") || keyLower.includes("déjeuner") || keyLower.includes("dejeuner") || keyLower.includes("plein")) {
                   
-                  // Déduction dynamique du nom de la colonne de remplacement associée
+                  // Déduction dynamique insensible à la casse et aux émojis
                   let repColName = "";
-                  if (keyClean.includes("Café matin")) repColName = "Remplacement Café matin";
-                  else if (keyClean.includes("Déjeuner")) repColName = "Remplacement Déjeuner";
-                  else if (keyClean.includes("Café après-midi")) repColName = "Remplacement Café après-midi";
-                  else if (keyClean.includes("Plein")) repColName = "Remplacement Plein";
+                  if (keyLower.includes("café matin") || keyLower.includes("cafe matin")) repColName = "Remplacement Café matin";
+                  else if (keyLower.includes("déjeuner") || keyLower.includes("dejeuner")) repColName = "Remplacement Déjeuner";
+                  else if (keyLower.includes("après-midi") || keyLower.includes("apres-midi") || keyLower.includes("pm")) repColName = "Remplacement Café après-midi";
+                  else if (keyLower.includes("plein")) repColName = "Remplacement Plein";
 
                   itemsList.push({
                     room: room,
@@ -349,7 +351,7 @@
         })
         .catch(err => console.error("Erreur de récupération :", err));
     }
-
+    
     function renderSectors() {
       const grid = document.getElementById('sectors-grid');
       if (!grid) return;
