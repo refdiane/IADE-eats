@@ -498,6 +498,19 @@
         return isMatchingPause && needsRelay(item.status);
       });
 
+// Calcul du nombre de demandes non résolues pour le macaron rouge
+      const localRelays = getLocalRelays();
+      const pendingCount = activeAlerts.filter(item => {
+        const normPause = normalizePauseType(item.pauseType);
+        const key = item.room + '_' + normPause;
+        const isDoneLocally = (localRelays && localRelays[key] === true);
+        const isDoneInSheet = item.replacementStatus && item.replacementStatus.toLowerCase().includes("effectué");
+        return !isDoneLocally && !isDoneInSheet;
+      }).length;
+
+      // Mise à jour du pastille rouge sur l'icône
+      updateAppBadge(pendingCount);    
+      
       if (activeAlerts.length > 0 && alertBox && alertMsg) {
         const localRelays = getLocalRelays();
         let html = `<strong style="font-size: 1rem;">🚨 Demandes de relais — ${activePauseLabel} :</strong>
