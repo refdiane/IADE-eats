@@ -272,26 +272,41 @@
     }
 
     function resolveAlertLocally(room, pauseType) {
+      const normPause = normalizePauseType(pauseType);
       const localRelays = getLocalRelays();
-      const key = room + '_' + normalizePauseType(pauseType);
+      const key = room + '_' + normPause;
+      
+      // 1. Sauvegarde immédiate en cache local pour masquer le bouton instantanément
       localRelays[key] = true;
       localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
 
-      const formData = new URLSearchParams();
-      formData.append('room', room);
-      formData.append('pauseType', pauseType);
-      formData.append('status', 'Effectuée');
+      // 2. Re-rendu immédiat de l'interface pour l'utilisateur
+      if (typeof fetchSavedData === 'function') {
+        fetchSavedData();
+      }
+
+      // 3. Envoi synchrone vers le Google Sheet (supporte texte brut et JSON)
+      const payload = {
+        room: room,
+        pauseType: normPause,
+        status: 'Effectué'
+      };
 
       fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "text/plain;charset=utf-8"
         },
-        body: formData.toString()
-      }).then(() => {
-        setTimeout(fetchSavedData, 1000);
-      });
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        // Rafraîchissement léger après 2 secondes pour valider la synchronisation Sheet
+        setTimeout(() => {
+          if (typeof fetchSavedData === 'function') fetchSavedData();
+        }, 2000);
+      })
+      .catch(err => console.error("Erreur d'envoi du relais :", err));
     }
     
     function normalizePauseType(type) {
