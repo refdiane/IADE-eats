@@ -449,7 +449,7 @@
       });
     }
 
-    function checkPendingAlerts(data) {
+     function checkPendingAlerts(data) {
       const alertBox = document.getElementById('push-alert');
       const alertMsg = document.getElementById('push-alert-message');
 
@@ -476,7 +476,7 @@
           }
         }
       }
-      
+
       // Créneaux horaires d'activation des alertes
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -500,6 +500,7 @@
 
       if (!activePauseType) {
         if (alertBox) alertBox.style.display = 'none';
+        updateAppBadge(0);
         return;
       }
 
@@ -508,8 +509,10 @@
         return isMatchingPause && needsRelay(item.status);
       });
 
-// Calcul du nombre de demandes non résolues pour le macaron rouge
+      // Récupération des relais locaux une seule fois
       const localRelays = getLocalRelays();
+
+      // Calcul du nombre de demandes non résolues pour le badge
       const pendingCount = activeAlerts.filter(item => {
         const normPause = normalizePauseType(item.pauseType);
         const key = item.room + '_' + normPause;
@@ -518,11 +521,10 @@
         return !isDoneLocally && !isDoneInSheet;
       }).length;
 
-      // Mise à jour du pastille rouge sur l'icône
-      updateAppBadge(pendingCount);    
-      
+      // Mise à jour de la pastille rouge sur l'icône
+      updateAppBadge(pendingCount);
+
       if (activeAlerts.length > 0 && alertBox && alertMsg) {
-        const localRelays = getLocalRelays();
         let html = `<strong style="font-size: 1rem;">🚨 Demandes de relais — ${activePauseLabel} :</strong>
                     <ul style="margin: 8px 0 0 0; padding-left: 15px; list-style-type: none;">`;
 
@@ -556,8 +558,7 @@
       } else if (alertBox) {
         alertBox.style.display = 'none';
       }
-    } 
-    
+    }    
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
       if (!tbody) return;
