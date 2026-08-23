@@ -58,16 +58,20 @@
     table.synth-table th { background: #34495e; color: white; }
     td.sector-cell { font-weight: bold; background: #f8f9fa; text-align: left; }
 
-    <!-- Icône pour iPhone / iPad (iOS) -->
+    <!-- Icône pour iOS (Safari / iPhone) -->
 <link rel="apple-touch-icon" href="https://i.ibb.co/SX6jDtYm/logo.png">
 
-<!-- Icône pour Android, Chrome et PC -->
+<!-- Icônes pour Chrome / PC -->
 <link rel="icon" type="image/png" sizes="192x192" href="https://i.ibb.co/SX6jDtYm/logo.png">
 <link rel="shortcut icon" href="https://i.ibb.co/SX6jDtYm/logo.png">
 
-<!-- Nom de l'application sur l'écran d'accueil -->
+<!-- Force le manifeste PWA pour Android -->
+<link rel="manifest" href='data:application/manifest+json,{"name":"IADE Eats","short_name":"IADE Eats","start_url":".","display":"standalone","icons":[{"src":"https://i.ibb.co/SX6jDtYm/logo.png","sizes":"192x192","type":"image/png"},{"src":"https://i.ibb.co/SX6jDtYm/logo.png","sizes":"512x512","type":"image/png"}]}'>
+
+<!-- Métadonnées App -->
 <meta name="apple-mobile-web-app-title" content="IADE Eats">
 <meta name="application-name" content="IADE Eats">
+<meta name="apple-mobile-web-app-capable" content="yes">
     
     #sync-status { position: fixed; bottom: 15px; right: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; z-index: 1000; }
   </style>
