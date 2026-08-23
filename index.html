@@ -467,6 +467,16 @@
         return str.includes("besoin") || str.includes("relais");
       }
 
+      function updateAppBadge(count) {
+        if ('setAppBadge' in navigator) {
+          if (count > 0) {
+            navigator.setAppBadge(count).catch(err => console.error("Erreur badge", err));
+          } else {
+            navigator.clearAppBadge().catch(err => console.error("Erreur effacement badge", err));
+          }
+        }
+      }
+      
       // Créneaux horaires d'activation des alertes
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
