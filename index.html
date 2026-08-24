@@ -58,23 +58,17 @@
     table.synth-table th { background: #34495e; color: white; }
     td.sector-cell { font-weight: bold; background: #f8f9fa; text-align: left; }
 
-    <!-- Icône pour iOS (Safari / iPhone) -->
-<link rel="apple-touch-icon" href="https://i.ibb.co/SX6jDtYm/logo.png">
-
-<!-- Icônes pour Chrome / PC -->
-<link rel="icon" type="image/png" sizes="192x192" href="https://i.ibb.co/SX6jDtYm/logo.png">
-<link rel="shortcut icon" href="https://i.ibb.co/SX6jDtYm/logo.png">
-
-<!-- Force le manifeste PWA pour Android -->
-<link rel="manifest" href='data:application/manifest+json,{"name":"IADE Eats","short_name":"IADE Eats","start_url":".","display":"standalone","icons":[{"src":"https://i.ibb.co/SX6jDtYm/logo.png","sizes":"192x192","type":"image/png"},{"src":"https://i.ibb.co/SX6jDtYm/logo.png","sizes":"512x512","type":"image/png"}]}'>
-
-<!-- Métadonnées App -->
-<meta name="apple-mobile-web-app-title" content="IADE Eats">
-<meta name="application-name" content="IADE Eats">
-<meta name="apple-mobile-web-app-capable" content="yes">
-    
     #sync-status { position: fixed; bottom: 15px; right: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; z-index: 1000; }
   </style>
+
+  <!-- Icônes & Manifeste -->
+  <link rel="apple-touch-icon" href="https://i.ibb.co/SX6jDtYm/logo.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="https://i.ibb.co/SX6jDtYm/logo.png">
+  <link rel="shortcut icon" href="https://i.ibb.co/SX6jDtYm/logo.png">
+  <link rel="manifest" href='data:application/manifest+json,{"name":"IADE Eats","short_name":"IADE Eats","start_url":".","display":"standalone","icons":[{"src":"https://i.ibb.co/SX6jDtYm/logo.png","sizes":"192x192","type":"image/png"},{"src":"https://i.ibb.co/SX6jDtYm/logo.png","sizes":"512x512","type":"image/png"}]}'>
+  <meta name="apple-mobile-web-app-title" content="IADE Eats">
+  <meta name="application-name" content="IADE Eats">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
 
@@ -143,37 +137,37 @@
       <div class="pause-row">
         <div class="pause-label">Café matin ☕</div>
         <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Café matin☕', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Café matin☕', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Café matin☕', 'Non effectuée', this)">Non effectuée</button>
+          <button class="btn-status bg-green" onclick="updateStatus('Café matin', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Café matin', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Café matin', 'Non effectuée', this)">Non effectuée</button>
         </div>
       </div>
 
       <div class="pause-row">
         <div class="pause-label">Déjeuner 🍽️</div>
         <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Déjeuner🍽️', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-blue" onclick="updateStatus('Déjeuner🍽️', 'Pause prévue avec l\'équipe', this)">Pause prévue</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Déjeuner🍽️', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Déjeuner🍽️', 'Non effectuée', this)">Non effectuée</button>
+          <button class="btn-status bg-green" onclick="updateStatus('Déjeuner', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-blue" onclick="updateStatus('Déjeuner', 'Pause prévue avec l\'équipe', this)">Pause prévue</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Déjeuner', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Déjeuner', 'Non effectuée', this)">Non effectuée</button>
         </div>
       </div>
 
       <div class="pause-row">
         <div class="pause-label">Café après-midi ☕</div>
         <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Café après-midi ☕', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Café après-midi ☕', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Café après-midi ☕', 'Non effectuée', this)">Non effectuée</button>
+          <button class="btn-status bg-green" onclick="updateStatus('Café après-midi', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Café après-midi', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Café après-midi', 'Non effectuée', this)">Non effectuée</button>
         </div>
       </div>
 
       <div class="pause-row">
         <div class="pause-label">Relais Plein 🛒</div>
         <div class="status-group">
-          <button class="btn-status bg-green" onclick="updateStatus('Relais Plein🛒', 'Effectuée', this)">Effectuée</button>
-          <button class="btn-status bg-orange" onclick="updateStatus('Relais Plein🛒', 'Besoin d\'un relais', this)">Besoin relais</button>
-          <button class="btn-status bg-red" onclick="updateStatus('Relais Plein🛒', 'Non effectuée', this)">Non effectuée</button>
+          <button class="btn-status bg-green" onclick="updateStatus('Plein', 'Effectuée', this)">Effectuée</button>
+          <button class="btn-status bg-orange" onclick="updateStatus('Plein', 'Besoin d\'un relais', this)">Besoin relais</button>
+          <button class="btn-status bg-red" onclick="updateStatus('Plein', 'Non effectuée', this)">Non effectuée</button>
         </div>
       </div>
     </div>
@@ -259,7 +253,6 @@
         const todayStr = new Date().toISOString().slice(0, 10);
         const savedDate = localStorage.getItem('iade_eats_relays_date');
         
-        // Réinitialisation quotidienne du cache local
         if (savedDate !== todayStr) {
           localStorage.setItem('iade_eats_relays_date', todayStr);
           localStorage.setItem('iade_eats_local_relays', '{}');
@@ -271,41 +264,42 @@
       }
     }
 
-   function resolveAlertLocally(room, pauseType) {
-  const normPause = normalizePauseType(pauseType);
-  const localRelays = getLocalRelays();
-  const key = room + '_' + normPause;
-  
-  // 1. Sauvegarde immédiate en cache local
-  localRelays[key] = true;
-  localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
+    function sendToGoogleSheet(payload, onSuccess) {
+      document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
 
-  // 2. Re-rendu immédiat
-  if (typeof fetchSavedData === 'function') {
-    fetchSavedData();
-  }
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        document.getElementById('sync-status').innerText = "🟢 Enregistré !";
+        if (onSuccess) onSuccess();
+        setTimeout(fetchSavedData, 1500);
+      })
+      .catch(err => {
+        console.error("Erreur d'envoi :", err);
+        document.getElementById('sync-status').innerText = "🔴 Erreur";
+      });
+    }
 
-  // 3. Formate les données pour e.parameter (compatible avec ton doPost)
-  const formData = new URLSearchParams();
-  formData.append('room', room);
-  formData.append('pauseType', normPause);
-  formData.append('status', 'Effectuée'); // "Effectuée" avec "e" pour correspondre au test if de Code.gs
+    function resolveAlertLocally(room, pauseType) {
+      const normPause = normalizePauseType(pauseType);
+      const localRelays = getLocalRelays();
+      const key = room + '_' + normPause;
+      
+      localRelays[key] = true;
+      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData.toString()
-  })
-  .then(() => {
-    setTimeout(() => {
       if (typeof fetchSavedData === 'function') fetchSavedData();
-    }, 2000);
-  })
-  .catch(err => console.error("Erreur d'envoi du relais :", err));
-}
+
+      sendToGoogleSheet({
+        room: room,
+        pauseType: normPause,
+        status: "Effectuée"
+      });
+    }
     
     function normalizePauseType(type) {
       if (!type) return '';
@@ -340,7 +334,6 @@
 
           if (Array.isArray(data)) {
             data.forEach(row => {
-              // Extraction robuste des salles
               const room = row["Salles d'opération"] || row["Salle"] || row["room"];
               if (!room) return;
 
@@ -348,10 +341,8 @@
                 const keyClean = key.toString().trim();
                 const keyLower = keyClean.toLowerCase();
 
-                // On s'intéresse aux colonnes de pauses (en minuscules)
                 if (keyLower.includes("café") || keyLower.includes("déjeuner") || keyLower.includes("dejeuner") || keyLower.includes("plein")) {
                   
-                  // Déduction dynamique insensible à la casse et aux émojis
                   let repColName = "";
                   if (keyLower.includes("café matin") || keyLower.includes("cafe matin")) repColName = "Remplacement Café matin";
                   else if (keyLower.includes("déjeuner") || keyLower.includes("dejeuner")) repColName = "Remplacement Déjeuner";
@@ -436,33 +427,16 @@
         btn.classList.add('active');
       }
 
-      document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
-
-      const formData = new URLSearchParams();
-      formData.append('room', selectedRoom);
-      formData.append('pauseType', pauseType);
-      formData.append('status', statusValue);
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: formData.toString()
-      })
-      .then(() => {
-        document.getElementById('sync-status').innerText = "🟢 Enregistré !";
+      sendToGoogleSheet({
+        room: selectedRoom,
+        pauseType: pauseType,
+        status: statusValue
+      }, function() {
         updateSynthBadge(selectedRoom, pauseType, statusValue);
-        setTimeout(fetchSavedData, 1000);
-      })
-      .catch(err => {
-        console.error("Erreur enregistrement :", err);
-        document.getElementById('sync-status').innerText = "🔴 Erreur";
       });
     }
 
-     function checkPendingAlerts(data) {
+    function checkPendingAlerts(data) {
       const alertBox = document.getElementById('push-alert');
       const alertMsg = document.getElementById('push-alert-message');
 
@@ -478,11 +452,9 @@
         if (!status) return false;
         const str = status.toString().trim().toLowerCase();
 
-        // EXCLURE IMM2DIATEMENT TOUT CE QUI EST "EFFECTUEE" OU "EFFECTUE" OU STATUS "V"
         if (str.includes("effectu") || str === "v") {
-          return false ;
-          }
-        // Déclenche l'alerte si statut contient UNIQUEMENT : besoin, relais OU non effectuée / x
+          return false;
+        }
         return str.includes("besoin") || str.includes("relais") || str.includes("non effectu") || str === "b" || str === "x";
       }
 
@@ -496,7 +468,6 @@
         }
       }
 
-      // Créneaux horaires d'activation des alertes
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
@@ -528,10 +499,8 @@
         return isMatchingPause && needsRelay(item.status);
       });
 
-      // Récupération des relais locaux une seule fois
       const localRelays = getLocalRelays();
 
-      // Calcul du nombre de demandes non résolues pour le badge
       const pendingCount = activeAlerts.filter(item => {
         const normPause = normalizePauseType(item.pauseType);
         const key = item.room + '_' + normPause;
@@ -540,7 +509,6 @@
         return !isDoneLocally && !isDoneInSheet;
       }).length;
 
-      // Mise à jour de la pastille rouge sur l'icône
       updateAppBadge(pendingCount);
 
       if (activeAlerts.length > 0 && alertBox && alertMsg) {
@@ -578,6 +546,7 @@
         alertBox.style.display = 'none';
       }
     }    
+    
     function renderSynthTable() {
       const tbody = document.getElementById('synth-tbody');
       if (!tbody) return;
