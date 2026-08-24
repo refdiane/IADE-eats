@@ -305,6 +305,7 @@
       formData.append('room', room);
       formData.append('pauseType', normPause);
       formData.append('status', 'Effectuée');
+      formData.append('isReplacement', 'true'); // Indique à Apps Script qu'il s'agit d'un relais par un tiers
 
       fetch(SCRIPT_URL, {
         method: "POST",
