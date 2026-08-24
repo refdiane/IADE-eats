@@ -287,6 +287,7 @@
 
       // 3. Envoi synchrone vers le Google Sheet (supporte texte brut et JSON)
       const payload = {
+        action: "resolveRelay",
         room: room,
         pauseType: normPause,
         status: 'Effectué'
