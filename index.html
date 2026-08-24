@@ -271,44 +271,41 @@
       }
     }
 
-    function resolveAlertLocally(room, pauseType) {
-      const normPause = normalizePauseType(pauseType);
-      const localRelays = getLocalRelays();
-      const key = room + '_' + normPause;
-      
-      // 1. Sauvegarde immédiate en cache local pour masquer le bouton instantanément
-      localRelays[key] = true;
-      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
+   function resolveAlertLocally(room, pauseType) {
+  const normPause = normalizePauseType(pauseType);
+  const localRelays = getLocalRelays();
+  const key = room + '_' + normPause;
+  
+  // 1. Sauvegarde immédiate en cache local
+  localRelays[key] = true;
+  localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
 
-      // 2. Re-rendu immédiat de l'interface pour l'utilisateur
-      if (typeof fetchSavedData === 'function') {
-        fetchSavedData();
-      }
+  // 2. Re-rendu immédiat
+  if (typeof fetchSavedData === 'function') {
+    fetchSavedData();
+  }
 
-      // 3. Envoi synchrone vers le Google Sheet (supporte texte brut et JSON)
-      const payload = {
-        action: "resolveRelay",
-        room: room,
-        pauseType: normPause,
-        status: 'Effectué'
-      };
+  // 3. Formate les données pour e.parameter (compatible avec ton doPost)
+  const formData = new URLSearchParams();
+  formData.append('room', room);
+  formData.append('pauseType', normPause);
+  formData.append('status', 'Effectuée'); // "Effectuée" avec "e" pour correspondre au test if de Code.gs
 
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
-      })
-      .then(() => {
-        // Rafraîchissement léger après 2 secondes pour valider la synchronisation Sheet
-        setTimeout(() => {
-          if (typeof fetchSavedData === 'function') fetchSavedData();
-        }, 2000);
-      })
-      .catch(err => console.error("Erreur d'envoi du relais :", err));
-    }
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  })
+  .then(() => {
+    setTimeout(() => {
+      if (typeof fetchSavedData === 'function') fetchSavedData();
+    }, 2000);
+  })
+  .catch(err => console.error("Erreur d'envoi du relais :", err));
+}
     
     function normalizePauseType(type) {
       if (!type) return '';
