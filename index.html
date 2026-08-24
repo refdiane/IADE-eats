@@ -264,6 +264,34 @@
       }
     }
 
+// Remplace par l'URL exacte de ton déploiement Google Apps Script
+const URL_SCRIPT_GOOGLE = "https://script.google.com/macros/s/AKfycbydPsjeyRnt4QhvHvj34z-P2IY3TXABlCemVGSPudkmQktQKJrDxqbMdJTJ6JqaXn4SiA/exec";
+
+function envoyerDonneesAuSheet(salle, typePause, statut) {
+  const payload = {
+    room: salle,           // Ex: "Salle 1"
+    pauseType: typePause,  // Ex: "Café matin", "Déjeuner", etc.
+    status: statut         // Ex: "Besoin d'un relais" ou "Effectuée"
+  };
+
+  fetch(URL_SCRIPT_GOOGLE, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.result === "success") {
+      console.log("Mise à jour réussie dans le Sheet !");
+    } else {
+      console.error("Erreur renvoyée par le script :", data.error);
+    }
+  })
+  .catch(error => {
+    console.error("Erreur lors de la requête fetch :", error);
+  });
+}
+    
     function sendToGoogleSheet(payload, onSuccess) {
       document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
 
