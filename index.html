@@ -313,21 +313,38 @@ function envoyerDonneesAuSheet(salle, typePause, statut) {
     }
 
     function resolveAlertLocally(room, pauseType) {
-      const normPause = normalizePauseType(pauseType);
-      const localRelays = getLocalRelays();
-      const key = room + '_' + normPause;
-      
-      localRelays[key] = true;
-      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
+  const normPause = normalizePauseType(pauseType);
+  const localRelays = getLocalRelays();
+  const key = room + '_' + normPause;
+  
+  // 1. Sauvegarde locale
+  localRelays[key] = true;
+  localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
 
+  // 2. Rafraîchissement UI
+  if (typeof fetchSavedData === 'function') {
+    fetchSavedData();
+  }
+
+  // 3. Envoi compatible x-www-form-urlencoded vers Apps Script
+  const formData = new URLSearchParams();
+  formData.append('room', room);
+  formData.append('pauseType', normPause);
+  formData.append('status', 'Effectuée');
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  }).then(() => {
+    setTimeout(() => {
       if (typeof fetchSavedData === 'function') fetchSavedData();
-
-      sendToGoogleSheet({
-        room: room,
-        pauseType: normPause,
-        status: "Effectuée"
-      });
-    }
+    }, 2000);
+  });
+}
     
     function normalizePauseType(type) {
       if (!type) return '';
