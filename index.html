@@ -478,9 +478,14 @@
 
       function needsRelay(status) {
         if (!status) return false;
-        const str = status.toString().toLowerCase();
-        // Déclenche l'alerte si statut contient : besoin, relais OU non effectuée / x
-        return str.includes("besoin") || str.includes("relais") || str.includes("non") || str === "x";
+        const str = status.toString().trim().toLowerCase();
+
+        // EXCLURE IMM2DIATEMENT TOUT CE QUI EST "EFFECTUEE" OU "EFFECTUE" OU STATUS "V"
+        if (str.includes("effectu") || str === "v") {
+          return false ;
+          }
+        // Déclenche l'alerte si statut contient UNIQUEMENT : besoin, relais OU non effectuée / x
+        return str.includes("besoin") || str.includes("relais") || str.includes("non effectu") || str === "b" || str === "x";
       }
 
       function updateAppBadge(count) {
