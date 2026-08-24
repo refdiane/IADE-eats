@@ -204,6 +204,25 @@
   <script>
     const VALID_ID = "CHUnice";
     const VALID_PASS = "2974";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydPsjeyRnt4QhvHvj34z-P2IY3TXABlCemVGSPudkmQktQKJrDxqbMdJTJ6JqaXn4SiA/exec";
+
+    const MAPPING = [
+      { sector: "Urgences 🚨", rooms: ["S1", "S2"] },
+      { sector: "Neurochir 🧠", rooms: ["S3", "S4", "S5"] },
+      { sector: "Ophtalmo 👁️", rooms: ["S6", "S7"] },
+      { sector: "Uro 🚽", rooms: ["S8", "S9", "S20"] },
+      { sector: "Traumato 🔨", rooms: ["S10", "S15"] },
+      { sector: "Ortho 🦴", rooms: ["S11", "S12", "S13", "S14"] },
+      { sector: "Rép 👄", rooms: ["S17", "S18", "S19"] },
+      { sector: "Cardio 🫀", rooms: ["S21", "S22"] },
+      { sector: "Vasculaire 🩸", rooms: ["S23", "S24", "S25"] },
+      { sector: "Thorax 🫁", rooms: ["S26", "S27", "S28"] },
+      { sector: "SSPI Nord-Nord 🏥", rooms: ["SSPI Nord-Nord"] },
+      { sector: "NRI ☢️", rooms: ["SBiplan", "SMonoplan", "STDM"] }
+    ];
+
+    let selectedSector = null;
+    let selectedRoom = null;
 
     function checkAuthOnLoad() {
       const savedAuth = localStorage.getItem("iade_eats_auth");
@@ -228,25 +247,6 @@
         errorMsg.style.display = "block";
       }
     }    
-    
-    const MAPPING = [
-      { sector: "Urgences 🚨", rooms: ["S1", "S2"] },
-      { sector: "Neurochir 🧠", rooms: ["S3", "S4", "S5"] },
-      { sector: "Ophtalmo 👁️", rooms: ["S6", "S7"] },
-      { sector: "Uro 🚽", rooms: ["S8", "S9", "S20"] },
-      { sector: "Traumato 🔨", rooms: ["S10", "S15"] },
-      { sector: "Ortho 🦴", rooms: ["S11", "S12", "S13", "S14"] },
-      { sector: "Rép 👄", rooms: ["S17", "S18", "S19"] },
-      { sector: "Cardio 🫀", rooms: ["S21", "S22"] },
-      { sector: "Vasculaire 🩸", rooms: ["S23", "S24", "S25"] },
-      { sector: "Thorax 🫁", rooms: ["S26", "S27", "S28"] },
-      { sector: "SSPI Nord-Nord 🏥", rooms: ["SSPI Nord-Nord"] },
-      { sector: "NRI ☢️", rooms: ["SBiplan", "SMonoplan", "STDM"] }
-    ];
-
-    let selectedSector = null;
-    let selectedRoom = null;
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydPsjeyRnt4QhvHvj34z-P2IY3TXABlCemVGSPudkmQktQKJrDxqbMdJTJ6JqaXn4SiA/exec";
 
     function getLocalRelays() {
       try {
@@ -264,42 +264,19 @@
       }
     }
 
-// Remplace par l'URL exacte de ton déploiement Google Apps Script
-const URL_SCRIPT_GOOGLE = "https://script.google.com/macros/s/AKfycbydPsjeyRnt4QhvHvj34z-P2IY3TXABlCemVGSPudkmQktQKJrDxqbMdJTJ6JqaXn4SiA/exec";
-
-function envoyerDonneesAuSheet(salle, typePause, statut) {
-  const payload = {
-    room: salle,           // Ex: "Salle 1"
-    pauseType: typePause,  // Ex: "Café matin", "Déjeuner", etc.
-    status: statut         // Ex: "Besoin d'un relais" ou "Effectuée"
-  };
-
-  fetch(URL_SCRIPT_GOOGLE, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.result === "success") {
-      console.log("Mise à jour réussie dans le Sheet !");
-    } else {
-      console.error("Erreur renvoyée par le script :", data.error);
-    }
-  })
-  .catch(error => {
-    console.error("Erreur lors de la requête fetch :", error);
-  });
-}
-    
     function sendToGoogleSheet(payload, onSuccess) {
       document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
+
+      const formData = new URLSearchParams();
+      formData.append('room', payload.room);
+      formData.append('pauseType', payload.pauseType);
+      formData.append('status', payload.status);
 
       fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString()
       })
       .then(() => {
         document.getElementById('sync-status').innerText = "🟢 Enregistré !";
@@ -313,38 +290,33 @@ function envoyerDonneesAuSheet(salle, typePause, statut) {
     }
 
     function resolveAlertLocally(room, pauseType) {
-  const normPause = normalizePauseType(pauseType);
-  const localRelays = getLocalRelays();
-  const key = room + '_' + normPause;
-  
-  // 1. Sauvegarde locale
-  localRelays[key] = true;
-  localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
+      const normPause = normalizePauseType(pauseType);
+      const localRelays = getLocalRelays();
+      const key = room + '_' + normPause;
+      
+      localRelays[key] = true;
+      localStorage.setItem('iade_eats_local_relays', JSON.stringify(localRelays));
 
-  // 2. Rafraîchissement UI
-  if (typeof fetchSavedData === 'function') {
-    fetchSavedData();
-  }
+      if (typeof fetchSavedData === 'function') {
+        fetchSavedData();
+      }
 
-  // 3. Envoi compatible x-www-form-urlencoded vers Apps Script
-  const formData = new URLSearchParams();
-  formData.append('room', room);
-  formData.append('pauseType', normPause);
-  formData.append('status', 'Effectuée');
+      const formData = new URLSearchParams();
+      formData.append('room', room);
+      formData.append('pauseType', normPause);
+      formData.append('status', 'Effectuée');
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData.toString()
-  }).then(() => {
-    setTimeout(() => {
-      if (typeof fetchSavedData === 'function') fetchSavedData();
-    }, 2000);
-  });
-}
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString()
+      }).then(() => {
+        setTimeout(() => {
+          if (typeof fetchSavedData === 'function') fetchSavedData();
+        }, 2000);
+      });
+    }
     
     function normalizePauseType(type) {
       if (!type) return '';
@@ -377,32 +349,21 @@ function envoyerDonneesAuSheet(salle, typePause, statut) {
         .then(data => {
           let itemsList = [];
 
-          if (Array.isArray(data)) {
-            data.forEach(row => {
-              const room = row["Salles d'opération"] || row["Salle"] || row["room"];
-              if (!room) return;
+          if (Array.isArray(data) && data.length > 1) {
+            // Lecture directe du tableau 2D renvoyé par Apps Script
+            // Ligne 0 = En-têtes, Lignes 1+ = Données
+            for (let r = 1; r < data.length; r++) {
+              const row = data[r];
+              const room = row[1]; // Colonne B : Salle d'opération
+              if (!room) continue;
 
-              Object.keys(row).forEach(key => {
-                const keyClean = key.toString().trim();
-                const keyLower = keyClean.toLowerCase();
-
-                if (keyLower.includes("café") || keyLower.includes("déjeuner") || keyLower.includes("dejeuner") || keyLower.includes("plein")) {
-                  
-                  let repColName = "";
-                  if (keyLower.includes("café matin") || keyLower.includes("cafe matin")) repColName = "Remplacement Café matin";
-                  else if (keyLower.includes("déjeuner") || keyLower.includes("dejeuner")) repColName = "Remplacement Déjeuner";
-                  else if (keyLower.includes("après-midi") || keyLower.includes("apres-midi") || keyLower.includes("pm")) repColName = "Remplacement Café après-midi";
-                  else if (keyLower.includes("plein")) repColName = "Remplacement Plein";
-
-                  itemsList.push({
-                    room: room,
-                    pauseType: keyClean,
-                    status: row[keyClean],
-                    replacementStatus: row[repColName] || ""
-                  });
-                }
-              });
-            });
+              itemsList.push(
+                { room: room, pauseType: "Café", status: row[2], replacementStatus: row[3] },
+                { room: room, pauseType: "Repas", status: row[4], replacementStatus: row[5] },
+                { room: room, pauseType: "CaféPM", status: row[6], replacementStatus: row[7] },
+                { room: room, pauseType: "Plein", status: row[8], replacementStatus: row[9] }
+              );
+            }
           }
 
           itemsList.forEach(item => {
