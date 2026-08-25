@@ -456,15 +456,23 @@
       }
 
       function needsRelay(status) {
-        if (!status) return false;
-        const str = status.toString().trim().toLowerCase();
+  if (!status) return false;
+  const str = status.toString().trim().toLowerCase();
 
-        if (str.includes("effectu") || str === "v") {
-          return false;
-        }
-        return str.includes("besoin") || str.includes("relais") || str.includes("non effectu") || str === "b" || str === "x";
-      }
+  // 1. Si la chaîne contient "non" (ex: "non effectuée"), c'est une demande de relais
+  if (str.includes("non")) {
+    return true;
+  }
 
+  // 2. Si elle contient "effectu" (sans le "non") ou vaut "v", pas de relais
+  if (str.includes("effectu") || str === "v") {
+    return false;
+  }
+
+  // 3. Autres cas déclenchant un relais
+  return str.includes("besoin") || str.includes("relais") || str === "b" || str === "x";
+}
+      
       function updateAppBadge(count) {
         if ('setAppBadge' in navigator) {
           if (count > 0) {
