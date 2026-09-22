@@ -58,59 +58,59 @@
     table.synth-table th { background: #34495e; color: white; }
     td.sector-cell { font-weight: bold; background: #f8f9fa; text-align: left; }
 
-.renfort-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 15px auto 20px auto;
-  padding: 0 10px;
-  max-width: 900px;
-  flex-wrap: wrap;
-}
+    .renfort-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 15px auto 20px auto;
+      padding: 0 10px;
+      max-width: 900px;
+      flex-wrap: wrap;
+    }
 
-.renfort-title {
-  font-weight: 600;
-  font-size: 1.05rem;
-  color: #2c3e50;
-}
+    .renfort-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #2c3e50;
+    }
 
-.renfort-label-badge {
-  background-color: #ff9800; /* Orange */
-  color: #000;
-  font-weight: bold;
-  padding: 8px 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.95rem;
-}
+    .renfort-label-badge {
+      background-color: #ff9800; /* Orange */
+      color: #000;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.95rem;
+    }
 
-.renfort-buttons {
-  display: flex;
-  gap: 6px;
-}
+    .renfort-buttons {
+      display: flex;
+      gap: 6px;
+    }
 
-.btn-renfort {
-  border: none;
-  background-color: #cfd8dc; /* Gris inactif */
-  color: #263238;
-  font-weight: bold;
-  font-size: 1rem;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+    .btn-renfort {
+      border: none;
+      background-color: #cfd8dc; /* Gris inactif */
+      color: #263238;
+      font-weight: bold;
+      font-size: 1rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
 
-/* Bouton sélectionné (Vert) */
-.btn-renfort.active {
-  background-color: #00e676; /* Vert actif */
-  color: #000;
-  transform: scale(1.05);
-}
+    /* Bouton sélectionné (Vert) */
+    .btn-renfort.active {
+      background-color: #00e676; /* Vert actif */
+      color: #000;
+      transform: scale(1.05);
+    }
     
     #sync-status { position: fixed; bottom: 15px; right: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; z-index: 1000; }
   </style>
@@ -173,19 +173,19 @@
     <button class="tab-btn" id="btn-tab2" onclick="switchTab('tab2')">Note du jour 📝</button>
   </nav>
 
-<!-- 2. Bloc Renfort -->
-<div class="renfort-container">
-  <span class="renfort-title">Sélectionner le nombre de :</span>
-  <div class="renfort-label-badge">
-    Renfort dispo ce jour 💪
+  <!-- Bloc Renfort -->
+  <div class="renfort-container">
+    <span class="renfort-title">Sélectionner le nombre de :</span>
+    <div class="renfort-label-badge">
+      Renfort dispo ce jour 💪
+    </div>
+    <div class="renfort-buttons">
+      <button type="button" class="btn-renfort active" onclick="selectRenfort(0)">0</button>
+      <button type="button" class="btn-renfort" onclick="selectRenfort(1)">1</button>
+      <button type="button" class="btn-renfort" onclick="selectRenfort(2)">2</button>
+      <button type="button" class="btn-renfort" onclick="selectRenfort(3)">3</button>
+    </div>
   </div>
-  <div class="renfort-buttons">
-    <button type="button" class="btn-renfort active" onclick="selectRenfort(0)">0</button>
-    <button type="button" class="btn-renfort" onclick="selectRenfort(1)">1</button>
-    <button type="button" class="btn-renfort" onclick="selectRenfort(2)">2</button>
-    <button type="button" class="btn-renfort" onclick="selectRenfort(3)">3</button>
-  </div>
-</div>
   
   <!-- ONGLET 1 -->
   <div id="tab1" class="tab-content active">
@@ -336,9 +336,12 @@
       document.getElementById('sync-status').innerText = "⏳ Enregistrement...";
 
       const formData = new URLSearchParams();
-      formData.append('room', payload.room);
-      formData.append('pauseType', payload.pauseType);
-      formData.append('status', payload.status);
+      formData.append('room', payload.room || '');
+      formData.append('pauseType', payload.pauseType || '');
+      formData.append('status', payload.status || '');
+      if (payload.renfort !== undefined) {
+        formData.append('renfort', payload.renfort);
+      }
 
       fetch(SCRIPT_URL, {
         method: "POST",
@@ -357,6 +360,11 @@
       });
     }
 
+    function selectRenfort(count) {
+      updateRenfortUI(count);
+      sendToGoogleSheet({ renfort: count });
+    }
+
     function resolveAlertLocally(room, pauseType) {
       const normPause = normalizePauseType(pauseType);
       const localRelays = getLocalRelays();
@@ -373,7 +381,7 @@
       formData.append('room', room);
       formData.append('pauseType', normPause);
       formData.append('status', 'Effectuée');
-      formData.append('isReplacement', 'true'); // Indique à Apps Script qu'il s'agit d'un relais par un tiers
+      formData.append('isReplacement', 'true');
 
       fetch(SCRIPT_URL, {
         method: "POST",
@@ -412,28 +420,25 @@
       document.getElementById(tabId).classList.add('active');
     }
 
-    // A intégrer dans ta fonction d'actualisation des données
-function syncRenfortFromSheet(data) {
-  // data[1][11] correspond à la Ligne 2, Colonne L (Index 11)
-  if (Array.isArray(data) && data.length > 1 && data[1][11] !== undefined) {
-    const val = parseInt(data[1][11]);
-    if (!isNaN(val) && val >= 0 && val <= 3) {
-      updateRenfortUI(val);
+    function syncRenfortFromSheet(data) {
+      if (Array.isArray(data) && data.length > 1 && data[1][11] !== undefined) {
+        const val = parseInt(data[1][11]);
+        if (!isNaN(val) && val >= 0 && val <= 3) {
+          updateRenfortUI(val);
+        }
+      }
     }
-  }
-}
 
-// Met à jour visuellement les boutons sans réémettre de requête POST
-function updateRenfortUI(valeur) {
-  const buttons = document.querySelectorAll('.btn-renfort');
-  buttons.forEach(btn => {
-    if (parseInt(btn.innerText) === valeur) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
+    function updateRenfortUI(valeur) {
+      const buttons = document.querySelectorAll('.btn-renfort');
+      buttons.forEach(btn => {
+        if (parseInt(btn.innerText) === valeur) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
     }
-  });
-}
     
     function fetchSavedData() {
       fetch(SCRIPT_URL)
@@ -442,11 +447,11 @@ function updateRenfortUI(valeur) {
           let itemsList = [];
 
           if (Array.isArray(data) && data.length > 1) {
-            // Lecture directe du tableau 2D renvoyé par Apps Script
-            // Ligne 0 = En-têtes, Lignes 1+ = Données
+            syncRenfortFromSheet(data);
+
             for (let r = 1; r < data.length; r++) {
               const row = data[r];
-              const room = row[1]; // Colonne B : Salle d'opération
+              const room = row[1];
               if (!room) continue;
 
               itemsList.push(
@@ -547,22 +552,19 @@ function updateRenfortUI(valeur) {
       }
 
       function needsRelay(status) {
-  if (!status) return false;
-  const str = status.toString().trim().toLowerCase();
+        if (!status) return false;
+        const str = status.toString().trim().toLowerCase();
 
-  // 1. Si la chaîne contient "non" (ex: "non effectuée"), c'est une demande de relais
-  if (str.includes("non")) {
-    return true;
-  }
+        if (str.includes("non")) {
+          return true;
+        }
 
-  // 2. Si elle contient "effectu" (sans le "non") ou vaut "v", pas de relais
-  if (str.includes("effectu") || str === "v") {
-    return false;
-  }
+        if (str.includes("effectu") || str === "v") {
+          return false;
+        }
 
-  // 3. Autres cas déclenchant un relais
-  return str.includes("besoin") || str.includes("relais") || str === "b" || str === "x";
-}
+        return str.includes("besoin") || str.includes("relais") || str === "b" || str === "x";
+      }
       
       function updateAppBadge(count) {
         if ('setAppBadge' in navigator) {
