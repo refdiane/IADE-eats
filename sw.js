@@ -1,33 +1,38 @@
-// Écoute des demandes de notifications push
-self.addEventListener('push', function(event) {
-  let data = {};
-  
-  if (event.data) {
+const NTFY_TOPIC_URL = 'https://ntfy.sh/iade-eats-nice-relais/sse';
+
+function subscribeToPush() {
+  const eventSource = new EventSource(NTFY_TOPIC_URL);
+
+  eventSource.onmessage = (event) => {
     try {
-      data = event.data.json();
-    } catch (e) {
-      data = { message: event.data.text() };
+      const data = JSON.parse(event.data);
+      // On ne traite que les vrais messages d'alerte
+      if (data.event === 'message') {
+        self.registration.showNotification("🚨 IADE Eats — Demande de relais", {
+          body: data.message,
+          icon: "https://i.ibb.co/SX6jDtYm/logo.png",
+          badge: "https://i.ibb.co/SX6jDtYm/logo.png",
+          vibrate: [200, 100, 200],
+          tag: "relais-alert"
+        });
+      }
+    } catch (err) {
+      console.error("Erreur réception ntfy :", err);
     }
-  }
-
-  const title = data.title || "🚨 IADE Eats — Demande de relais";
-  const options = {
-    body: data.message || "Un collègue a besoin d'un relais.",
-    icon: "https://i.ibb.co/SX6jDtYm/logo.png",
-    badge: "https://i.ibb.co/SX6jDtYm/logo.png",
-    vibrate: [200, 100, 200]
   };
+}
 
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+// Activation du Service Worker et lancement de l'écoute
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+  subscribeToPush();
 });
 
-// Action au clic sur la notification : ouvre l'application
-self.addEventListener('notificationclick', function(event) {
+// Clic sur la notification -> Ouvre ou ramène la WebApp au premier plan
+self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       if (clientList.length > 0) {
         return clientList[0].focus();
       }
