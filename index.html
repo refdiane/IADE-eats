@@ -271,6 +271,12 @@
 
   <div id="sync-status">🟢 Prêt</div>
 
+<!-- Bouton fixe Notifications (Bas-Gauche) -->
+<div id="push-floating-btn" onclick="toggleNotificationsFromBtn()" style="position: fixed; bottom: 15px; left: 15px; background: #34495e; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; z-index: 1000; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); user-select: none;">
+  <span id="push-icon">🔕</span>
+  <span id="push-label">Notifs OFF</span>
+</div>
+  
   <script>
     const VALID_ID = "CHUnice";
     const VALID_PASS = "2974";
