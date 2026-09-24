@@ -743,6 +743,77 @@
         tsDisplay.innerText = 'Date du jour : ' + today;
       }
     });
+
+    // --- GESTION DES NOTIFICATIONS (BOUTON FIXE BAS-GAUCHE) ---
+
+let swRegistration = null;
+
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => {
+      swRegistration = reg;
+      checkNotificationStatus();
+    })
+    .catch(err => console.error('Erreur Service Worker :', err));
+}
+
+function checkNotificationStatus() {
+  const isSavedOn = localStorage.getItem('iade_eats_push_enabled') === 'true';
+  if (Notification.permission === 'granted' && isSavedOn) {
+    updatePushBtnUI(true);
+  } else {
+    updatePushBtnUI(false);
+  }
+}
+
+function updatePushBtnUI(enabled) {
+  const btn = document.getElementById('push-floating-btn');
+  const icon = document.getElementById('push-icon');
+  const label = document.getElementById('push-label');
+
+  if (!btn) return;
+
+  if (enabled) {
+    btn.style.background = "#2ecc71"; // Vert quand actif
+    icon.innerText = "🔔";
+    label.innerText = "Notifs ON";
+  } else {
+    btn.style.background = "#34495e"; // Sombre quand inactif
+    icon.innerText = "🔕";
+    label.innerText = "Notifs OFF";
+  }
+}
+
+function toggleNotificationsFromBtn() {
+  const isCurrentlyOn = localStorage.getItem('iade_eats_push_enabled') === 'true';
+
+  if (!isCurrentlyOn) {
+    // Activer les notifications
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        localStorage.setItem('iade_eats_push_enabled', 'true');
+        updatePushBtnUI(true);
+
+        // Notification test
+        if (swRegistration) {
+          swRegistration.showNotification("IADE Eats 🔔", {
+            body: "Notifications activées anonymement !",
+            icon: "https://i.ibb.co/SX6jDtYm/logo.png"
+          });
+        }
+      } else {
+        alert("Les notifications sont bloquées par votre navigateur ou votre téléphone.");
+        localStorage.setItem('iade_eats_push_enabled', 'false');
+        updatePushBtnUI(false);
+      }
+    });
+  } else {
+    // Désactiver les notifications
+    localStorage.setItem('iade_eats_push_enabled', 'false');
+    updatePushBtnUI(false);
+  }
+}
+    
   </script>
 </body>
 </html>
