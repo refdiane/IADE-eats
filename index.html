@@ -784,23 +784,68 @@ function updatePushBtnUI(enabled) {
   }
 }
 
+const PUBLIC_VAPID_KEY = "BFj2KexH4yDob8wPMgMaX6A_tr6EZFmCDbeu4zWstV8JPAb6Mymaex09nxJDvwJMvBs-yIw1Wt7v8gn21GJkk58";
+
+// Utilitaire indispensable pour convertir la clé VAPID au format binaire exigé par le navigateur
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 function toggleNotificationsFromBtn() {
   const isCurrentlyOn = localStorage.getItem('iade_eats_push_enabled') === 'true';
 
   if (!isCurrentlyOn) {
-    // Activer les notifications
+    // 1. Demander la permission
     Notification.requestPermission().then(permission => {
       if (permission === 'granted') {
-        localStorage.setItem('iade_eats_push_enabled', 'true');
-        updatePushBtnUI(true);
-
-        // Notification test
-        if (swRegistration) {
-          swRegistration.showNotification("IADE Eats 🔔", {
-            body: "Notifications activées !",
-            icon: "https://i.ibb.co/SX6jDtYm/logo.png"
+        
+        // 2. Récupérer l'enregistrement du Service Worker
+        navigator.serviceWorker.ready.then(reg => {
+          const subscribeOptions = {
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+          };
+          // 3. Créer le jeton d'abonnement Push VAPID auprès du système mobile
+          return reg.pushManager.subscribe(subscribeOptions);
+        }).then(subscription => {
+          
+          // 4. Envoyer l'abonnement unique au Google Sheet pour archivage dans "AbonnementsPush"
+          fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "subscribe_push",
+              subscription: JSON.stringify(subscription)
+            }).toString()
           });
-        }
+
+          // 5. Mettre à jour l'état local et le bouton IHM
+          localStorage.setItem('iade_eats_push_enabled', 'true');
+          updatePushBtnUI(true);
+
+          // Notification locale de confirmation
+          if (swRegistration) {
+            swRegistration.showNotification("IADE Eats 🔔", {
+              body: "Notifications Web Push VAPID activées !",
+              icon: "https://i.ibb.co/SX6jDtYm/logo.png"
+            });
+          }
+
+        }).catch(err => {
+          console.error("Erreur d'abonnement Push :", err);
+          alert("Impossible d'activer les notifications Push sur cet appareil.");
+          localStorage.setItem('iade_eats_push_enabled', 'false');
+          updatePushBtnUI(false);
+        });
+
       } else {
         alert("Les notifications sont bloquées par votre navigateur ou votre téléphone.");
         localStorage.setItem('iade_eats_push_enabled', 'false');
