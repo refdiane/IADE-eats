@@ -1,31 +1,33 @@
-const NTFY_TOPIC_URL = 'https://ntfy.sh/iade-eats-nice-relais/sse';
+// Écoute des événements Push natifs du système (iOS / Android)
+self.addEventListener('push', function(event) {
+  let data = { title: "🚨 IADE Eats", body: "Nouvelle demande enregistrée." };
 
-function subscribeToPush() {
-  const eventSource = new EventSource(NTFY_TOPIC_URL);
-
-  eventSource.onmessage = (event) => {
+  if (event.data) {
     try {
-      const data = JSON.parse(event.data);
-      // On ne traite que les vrais messages d'alerte
-      if (data.event === 'message') {
-        self.registration.showNotification("🚨 IADE Eats — Demande de relais", {
-          body: data.message,
-          icon: "https://i.ibb.co/SX6jDtYm/logo.png",
-          badge: "https://i.ibb.co/SX6jDtYm/logo.png",
-          vibrate: [200, 100, 200],
-          tag: "relais-alert"
-        });
-      }
-    } catch (err) {
-      console.error("Erreur réception ntfy :", err);
+      data = event.data.json();
+    } catch (e) {
+      data = { title: "🚨 IADE Eats", body: event.data.text() };
     }
-  };
-}
+  }
 
-// Activation du Service Worker et lancement de l'écoute
+  const options = {
+    body: data.body || data.message,
+    icon: "https://i.ibb.co/SX6jDtYm/logo.png",
+    badge: "https://i.ibb.co/SX6jDtYm/logo.png",
+    vibrate: [200, 100, 200],
+    tag: "relais-alert",
+    renotify: true,
+    data: { url: "./" }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || "🚨 IADE Eats — Demande de relais", options)
+  );
+});
+
+// Prise de contrôle immédiate lors de l'activation
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
-  subscribeToPush();
 });
 
 // Clic sur la notification -> Ouvre ou ramène la WebApp au premier plan
