@@ -802,7 +802,7 @@ function updatePushBtnUI(enabled) {
   const app = initializeApp(firebaseConfig);
   const messaging = getMessaging(app);
 
-  // Remplace directement ton ancienne fonction toggleNotificationsFromBtn
+  // Fonction de gestion du bouton de notifications
   window.toggleNotificationsFromBtn = async function() {
     const isCurrentlyOn = localStorage.getItem('iade_eats_push_enabled') === 'true';
 
@@ -810,15 +810,19 @@ function updatePushBtnUI(enabled) {
       try {
         // 1. Demander la permission au navigateur/téléphone
         const permission = await Notification.requestPermission();
-        
+
         if (permission === 'granted') {
-          // 2. Récupérer le token unique Firebase pour cet appareil
+          // 2. Enregistrement explicite du Service Worker dans le sous-dossier GitHub Pages
+          const swRegistration = await navigator.serviceWorker.register('/IADE-eats/firebase-messaging-sw.js');
+
+          // 3. Récupération du token en fournissant l'enregistrement
           const token = await getToken(messaging, { 
-            vapidKey: 'BFhgfOIxErLSI9wRwwJQL-w69iAZNgDf2Kqk_tuVC3DsZf_hSkN9Ezce8J4OcYwyu7iETtaikLEl6GgeskPoeN0' 
+            vapidKey: 'BFhgfOIxErLSI9wRwwJQL-w69iAZNgDf2Kqk_tuVC3DsZf_hSkN9Ezce8J4OcYwyu7iETtaikLEl6GgeskPoeN0',
+            serviceWorkerRegistration: swRegistration
           });
-          
+
           if (token) {
-            // 3. Envoyer le token à Google Apps Script
+            // 4. Envoyer le token à Google Apps Script
             await fetch(SCRIPT_URL, {
               method: "POST",
               mode: "no-cors",
@@ -829,7 +833,7 @@ function updatePushBtnUI(enabled) {
               }).toString()
             });
 
-            // 4. Mettre à jour le bouton et le stockage local
+            // 5. Mettre à jour le bouton et le stockage local
             localStorage.setItem('iade_eats_push_enabled', 'true');
             if (typeof updatePushBtnUI === 'function') updatePushBtnUI(true);
 
@@ -844,7 +848,7 @@ function updatePushBtnUI(enabled) {
         }
       } catch (err) {
         console.error("Erreur Firebase FCM :", err);
-        alert("Erreur lors de l'activation des notifications.");
+        alert("Erreur lors de l'activation des notifications : " + err.message);
         localStorage.setItem('iade_eats_push_enabled', 'false');
         if (typeof updatePushBtnUI === 'function') updatePushBtnUI(false);
       }
@@ -862,7 +866,4 @@ function updatePushBtnUI(enabled) {
       alert(`🚨 ${payload.notification.title}\n${payload.notification.body}`);
     }
   });
-  
-  </script>
-</body>
-</html>
+</script>
