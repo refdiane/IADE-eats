@@ -784,81 +784,84 @@ function updatePushBtnUI(enabled) {
   }
 }
 
-const PUBLIC_VAPID_KEY = "BFj2KexH4yDob8wPMgMaX6A_tr6EZFmCDbeu4zWstV8JPAb6Mymaex09nxJDvwJMvBs-yIw1Wt7v8gn21GJkk58";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
-// Utilitaire indispensable pour convertir la clé VAPID au format binaire exigé par le navigateur
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
+  // Configuration Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAvpwp7EaLE_3PsepWQ8MiG_qG4lOdn1TI",
+    authDomain: "iade-eats.firebaseapp.com",
+    projectId: "iade-eats",
+    storageBucket: "iade-eats.firebasestorage.app",
+    messagingSenderId: "26924527992",
+    appId: "1:26924527992:web:868e8d37618dcdfc5c588d"
+  };
 
-function toggleNotificationsFromBtn() {
-  const isCurrentlyOn = localStorage.getItem('iade_eats_push_enabled') === 'true';
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
 
-  if (!isCurrentlyOn) {
-    // 1. Demander la permission
-    Notification.requestPermission().then(permission => {
-      if (permission === 'granted') {
+  // Remplace directement ton ancienne fonction toggleNotificationsFromBtn
+  window.toggleNotificationsFromBtn = async function() {
+    const isCurrentlyOn = localStorage.getItem('iade_eats_push_enabled') === 'true';
+
+    if (!isCurrentlyOn) {
+      try {
+        // 1. Demander la permission au navigateur/téléphone
+        const permission = await Notification.requestPermission();
         
-        // 2. Récupérer l'enregistrement du Service Worker
-        navigator.serviceWorker.ready.then(reg => {
-          const subscribeOptions = {
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
-          };
-          // 3. Créer le jeton d'abonnement Push VAPID auprès du système mobile
-          return reg.pushManager.subscribe(subscribeOptions);
-        }).then(subscription => {
-          
-          // 4. Envoyer l'abonnement unique au Google Sheet pour archivage dans "AbonnementsPush"
-          fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "subscribe_push",
-              subscription: JSON.stringify(subscription)
-            }).toString()
+        if (permission === 'granted') {
+          // 2. Récupérer le token unique Firebase pour cet appareil
+          const token = await getToken(messaging, { 
+            vapidKey: 'BFhgfOIxErLSI9wRwwJQL-w69iAZNgDf2Kqk_tuVC3DsZf_hSkN9Ezce8J4OcYwyu7iETtaikLEl6GgeskPoeN0' 
           });
-
-          // 5. Mettre à jour l'état local et le bouton IHM
-          localStorage.setItem('iade_eats_push_enabled', 'true');
-          updatePushBtnUI(true);
-
-          // Notification locale de confirmation
-          if (swRegistration) {
-            swRegistration.showNotification("IADE Eats 🔔", {
-              body: "Notifications Web Push VAPID activées !",
-              icon: "https://i.ibb.co/SX6jDtYm/logo.png"
+          
+          if (token) {
+            // 3. Envoyer le token à Google Apps Script
+            await fetch(SCRIPT_URL, {
+              method: "POST",
+              mode: "no-cors",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                action: "subscribe_fcm",
+                token: token
+              }).toString()
             });
+
+            // 4. Mettre à jour le bouton et le stockage local
+            localStorage.setItem('iade_eats_push_enabled', 'true');
+            if (typeof updatePushBtnUI === 'function') updatePushBtnUI(true);
+
+            alert("Notifications IADE Eats activées avec succès ! 🔔");
+          } else {
+            alert("Impossible de générer le jeton de notification.");
           }
-
-        }).catch(err => {
-          console.error("Erreur d'abonnement Push :", err);
-          alert("Impossible d'activer les notifications Push sur cet appareil.");
+        } else {
+          alert("Les notifications sont bloquées par votre navigateur ou votre téléphone.");
           localStorage.setItem('iade_eats_push_enabled', 'false');
-          updatePushBtnUI(false);
-        });
-
-      } else {
-        alert("Les notifications sont bloquées par votre navigateur ou votre téléphone.");
+          if (typeof updatePushBtnUI === 'function') updatePushBtnUI(false);
+        }
+      } catch (err) {
+        console.error("Erreur Firebase FCM :", err);
+        alert("Erreur lors de l'activation des notifications.");
         localStorage.setItem('iade_eats_push_enabled', 'false');
-        updatePushBtnUI(false);
+        if (typeof updatePushBtnUI === 'function') updatePushBtnUI(false);
       }
-    });
-  } else {
-    // Désactiver les notifications
-    localStorage.setItem('iade_eats_push_enabled', 'false');
-    updatePushBtnUI(false);
-  }
-}
-    
+    } else {
+      // Désactivation locale
+      localStorage.setItem('iade_eats_push_enabled', 'false');
+      if (typeof updatePushBtnUI === 'function') updatePushBtnUI(false);
+      alert("Notifications désactivées sur cet appareil.");
+    }
+  };
+
+  // Notification reçue quand l'application est ouverte au premier plan
+  onMessage(messaging, (payload) => {
+    if (payload.notification) {
+      alert(`🚨 ${payload.notification.title}\n${payload.notification.body}`);
+    }
+  });
+  
   </script>
 </body>
 </html>
