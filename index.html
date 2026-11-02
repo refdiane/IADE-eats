@@ -907,13 +907,13 @@ function updatePushBtnUI(enabled) {
   let chartsInstance = {};
 
  window.ouvrirStats = function() {
-  console.log("Clic sur le bouton Stats détecté !"); // Pour tester
   document.getElementById("modalStats").style.display = "block";
   
+  // Ajout indispensable de ?action=stats pour que l'Apps Script exécute toutAnalyserPourStats()
   fetch(SCRIPT_URL + "?action=stats")
     .then(res => res.json())
     .then(data => {
-      console.log("Données reçues de l'Apps Script :", data);
+      console.log("Données reçues pour les stats :", data);
       afficherGraphiques(data);
     })
     .catch(err => console.error("Erreur de récupération des stats :", err));
