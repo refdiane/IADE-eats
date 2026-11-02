@@ -818,6 +818,81 @@ function updatePushBtnUI(enabled) {
     label.innerText = "Notifs OFF";
   }
 }
+    let chartsInstance = {};
+
+function ouvrirStats() {
+  document.getElementById("modalStats").style.display = "block";
+  
+  // Affichage d'un petit effet de chargement si tu veux, puis appel du backend
+  google.script.run
+    .withSuccessHandler(afficherGraphiques)
+    .toutAnalyserPourStats();
+}
+
+function fermerStats() {
+  document.getElementById("modalStats").style.display = "none";
+}
+
+function afficherGraphiques(stats) {
+  if (!stats) return;
+
+  // 1. Donut Global d'utilisation
+  const ctxDonut = document.getElementById('chartGlobalDonut').getContext('2d');
+  if (chartsInstance.donut) chartsInstance.donut.destroy();
+  
+  const actif = stats.sallesActivesGlobalCumul || 0;
+  const total = stats.totalPotentiel || 1;
+  const inoccupé = Math.max(0, total - actif);
+
+  chartsInstance.donut = new Chart(ctxDonut, {
+    type: 'doughnut',
+    data: {
+      labels: ['Salles Actives', 'Disponibles / Inoccupées'],
+      datasets: [{
+        data: [actif, inoccupé],
+        backgroundColor: ['#00b074', '#e2e8f0']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // 2. Histogramme des pauses par secteur
+  const ctxBar = document.getElementById('chartSecteurBar').getContext('2d');
+  if (chartsInstance.bar) chartsInstance.bar.destroy();
+  
+  const secteurs = Object.keys(stats.statsParSecteur || {});
+  const dataCaféMatin = secteurs.map(sec => stats.statsParSecteur[sec]["Café matin"]?.effectuee || 0);
+  const dataDejeuner = secteurs.map(sec => stats.statsParSecteur[sec]["Déjeuner"]?.effectuee || 0);
+
+  chartsInstance.bar = new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+      labels: secteurs,
+      datasets: [
+        {
+          label: 'Café Matin (Effectué)',
+          data: dataCaféMatin,
+          backgroundColor: '#3498db'
+        },
+        {
+          label: 'Déjeuner (Effectué)',
+          data: dataDejeuner,
+          backgroundColor: '#2ecc71'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true }
+      }
+    }
+  });
+}
   </script>
     
 <script type="module">
