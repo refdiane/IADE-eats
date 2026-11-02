@@ -125,6 +125,9 @@
   <meta name="apple-mobile-web-app-title" content="IADE Eats">
   <meta name="application-name" content="IADE Eats">
   <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
 </head>
 <body>
 
@@ -188,6 +191,38 @@
       <button type="button" class="btn-renfort" onclick="selectRenfort(3)">3</button>
     </div>
   </div>
+  
+  <!-- Bouton pour ouvrir les stats -->
+<button id="btnStats" onclick="ouvrirStats()" style="background: #4f46e5; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">
+  📊 Statistiques
+</button>
+
+<!-- Structure de la modale des stats -->
+<div id="modalStats" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px;">
+  <div style="background: white; max-width: 800px; margin: 30px auto; padding: 20px; border-radius: 12px; position: relative;">
+    <button onclick="fermerStats()" style="position: absolute; top: 15px; right: 15px; background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Fermer X</button>
+    
+    <h2>Tableau de bord - Statistiques</h2>
+    
+    <!-- Graphique 1 : Donut global d'utilisation -->
+    <div style="margin-bottom: 30px;">
+      <h3>Utilisation Globale du Bloc</h3>
+      <canvas id="chartGlobalDonut"></canvas>
+    </div>
+
+    <!-- Graphique 2 : Histogramme des pauses par secteur -->
+    <div style="margin-bottom: 30px;">
+      <h3>Pauses par Secteur (Histogramme)</h3>
+      <canvas id="chartSecteurBar"></canvas>
+    </div>
+
+    <!-- Graphique 3 : Corrélation usage / efficacité -->
+    <div style="margin-bottom: 30px;">
+      <h3>Corrélation Usage & Efficacité</h3>
+      <canvas id="chartCorrelation"></canvas>
+    </div>
+  </div>
+</div>
   
   <!-- ONGLET 1 -->
   <div id="tab1" class="tab-content active">
