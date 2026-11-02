@@ -927,6 +927,49 @@ function updatePushBtnUI(enabled) {
     console.log("Données reçues :", stats);
     if (!stats) return;
 
+const centerTextPlugin = {
+    id: 'centerText',
+    afterDraw(chart) {
+      if (chart.config.type !== 'doughnut') return;
+      
+      const { ctx, width, height } = chart;
+      ctx.save();
+      
+      const dataset = chart.data.datasets[0];
+      const actif = dataset.data[0] || 0;
+      const inoccupé = dataset.data[1] || 0;
+      const total = actif + inoccupé;
+      const pourcentage = total > 0 ? Math.round((actif / total) * 100) : 0;
+      
+      let message = "";
+      if (pourcentage >= 90) {
+        message = "🥳 Vous êtes au top !!!";
+      } else if (pourcentage >= 70) {
+        message = "Encore un petit effort 🤸";
+      } else {
+        message = "On peut faire mieux 💪";
+      }
+
+      const centerX = chart.getDatasetMeta(0).data[0]?.x || width / 2;
+      const centerY = chart.getDatasetMeta(0).data[0]?.y || height / 2;
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Affichage du pourcentage
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillStyle = '#2c3e50';
+      ctx.fillText(pourcentage + "%", centerX, centerY - 12);
+
+      // Affichage du message d'encouragement
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#7f8c8d';
+      ctx.fillText(message, centerX, centerY + 14);
+
+      ctx.restore();
+    }
+  };
+    
     // 1. Donut Global d'utilisation
     const ctxDonut = document.getElementById('chartGlobalDonut').getContext('2d');
     if (chartsInstance.donut) chartsInstance.donut.destroy();
@@ -948,6 +991,7 @@ function updatePushBtnUI(enabled) {
         responsive: true,
         plugins: { legend: { position: 'bottom' } }
       }
+      plugins: [centerTextPlugin]
     });
 
     // 2. Histogramme des pauses par secteur
